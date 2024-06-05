@@ -16,6 +16,9 @@ import { ref, onValue, set } from 'firebase/database';
 import './BogoGram.css';
 
 
+// Create dictionary
+import dictionary from './populateTrie';
+
 
 // Grid formation plus tilebag
 const gridSize = 35;
@@ -54,7 +57,7 @@ function BogoGram() {
   const [startCol, setStartCol] = useState(null);
   const [direction, setDirection] = useState('horizontal');
   const [playerLetters, setPlayerLetters] = useState([]);
-  const [user] = useAuthState(auth); //new 
+  const [user] = useAuthState(auth); //new
 
   const signIn = async () => { //new function
     const provider = new GoogleAuthProvider(); // Create a Google Auth provider
@@ -115,6 +118,12 @@ function BogoGram() {
 
   const placeWord = () => {
     if (!currentWord || startRow === null || startCol === null) return;
+
+    // Check validity
+    if (!dictionary.search(currentWord)) {
+      alert("Invalid word");
+      return;
+    }
 
     const newGrid = grid.map(row => row.slice());
     const newPlayerLetters = [...playerLetters];
