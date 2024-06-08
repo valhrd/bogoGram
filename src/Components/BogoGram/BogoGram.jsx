@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { database } from './firebaseConfig'; // Adjust the path if necessary
-// import firebase from 'firebase/app';
-/* import 'firebase/firestore'; //new from here
-import 'firebase/auth';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { useCollectionData } from 'react-firebase-hooks/firestore'; //until here
-*/
-
+import { getFunctions, httpsCallable} from 'firebase/functions'; //line 3 
 import { initializeApp } from 'firebase/app'; 
-import { getAuth, signInWithPopup, GoogleAuthProvider, verifyPasswordResetCode } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getAuth, signInWithPopup, GoogleAuthProvider, connectAuthEmulator, verifyPasswordResetCode } from 'firebase/auth';
+import { collection, getFirestore, query, orderBy, limit } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { useCollectionData } from 'react-firebase-hooks/firestore';
+
 
 import { ref, onValue, set } from 'firebase/database';
 import './BogoGram.css';
@@ -69,6 +65,17 @@ function BogoGram() {
   const [startRow, setStartRow] = useState(null);
   const [startCol, setStartCol] = useState(null);
 
+  // for server side things
+  const gameDataRef = collection(firestore, 'gameData'); //new on 3 Jun
+  const [gameName, setGameName] = useState(null); // this is for debugging, 8 Jun
+  const [gameNumber, setGameNumber] = useState(null);  // Changed to use useState
+  const queryConstraints = query(gameDataRef, orderBy('createdAt'), limit(5)); // is this necessary? 
+  const [gameStates] = useCollectionData(queryConstraints, { idField: 'gameID' }); // or this
+  
+  // this is to lock the distribute and peel buttons when necessary
+  const [tilesDistributed, setTilesDistributed] = useState(false);
+  const [tilesInBag, setTilesInBag] = useState(true);
+  
   // const [direction, setDirection] = useState('horizontal'); // Unneeded as of now
   
   // For toggling direction of play
@@ -79,11 +86,11 @@ function BogoGram() {
   // Keeps track of all words played by this player;
   const wordsPlayed = [];
   
-  const [user] = useAuthState(auth); //new
-  const signIn = async () => { //new function
-    const provider = new GoogleAuthProvider(); // Create a Google Auth provider
+  const [user] = useAuthState(auth); 
+  const signIn = async () => { 
+    const provider = new GoogleAuthProvider(); 
     try {
-        await signInWithPopup(auth, provider); // Sign in with a popup window
+        await signInWithPopup(auth, provider); 
     } catch (error) {
         console.error('SignIn Error:', error);
     }
@@ -299,9 +306,18 @@ function BogoGram() {
   // Dev start/restart game function
   const startGame = () => {
     // Randomised array to represent tilebag
-    lettersArray = letters.split('').sort((firstLetter, secondLetter) => 0.5 - Math.random());
+    // lettersArray = letters.split('').sort((firstLetter, secondLetter) => 0.5 - Math.random());
     clearBoard();
     setPlayerLetters([]);
+    const functions  = getFunctions(app);
+    const createGame = httpsCallable(functions, 'createGame');
+    createGame().then((result) => {
+      console.log('New Game Created with ID: ', result.data.gameID);
+      setGameNumber(result.data.gameID);
+      setGameName("Game " + result.data.gameID); // for debugging purposes
+    }).catch(error => {
+      console.error('Error in creating new game', error);
+    });
   }
 
 
@@ -322,25 +338,34 @@ function BogoGram() {
 
   // Distribute letters to players
   const distributeLetters = () => {
-
-    // Changes distribution function
-    const newLetters = [...playerLetters]; // Changes empty array to getting previous tiles
-    for (let i = newLetters.length; i < 14; i++) { // Changes starting value of i from 0 to previous playerLetters array length
-      if (lettersArray === undefined || lettersArray.length === 0) {
-        break;
-      }
-      newLetters.push(lettersArray.pop());
-    }
-
-    set(ref(database, 'playerLetters'), newLetters)
-      .then(() => {
-        setPlayerLetters(newLetters);
-      })
-      .catch(error => {
-        console.error('Error distributing letters:', error);
-      });
+    const functions = getFunctions(app);
+    const distributeTiles = httpsCallable(functions, 'distributeTiles');
+    distributeTiles({ gameID: gameNumber }).then((result) => {
+      setPlayerLetters(result.data.tiles);
+      console.log('Tiles distributed for game:', gameNumber);
+      setTilesDistributed(true);
+    }).catch(error => {
+      console.error('Error distributing tiles:', error);
+    });
   };
 
+  // Peel: provides a singular new letter to the player
+  const peel = () => {
+    const functions = getFunctions(app);
+    const peel = httpsCallable(functions, 'peel');
+    peel({gameID: gameNumber}).then((result) => {
+      const peeledTile = result.data.tile;
+      if (peeledTile === "*") {
+        setTilesInBag(false);
+        alert("No more tiles in the bag!");
+      } else {
+        setPlayerLetters(prevLetters => [...prevLetters, peeledTile]); // Append new tile to existing tiles
+        console.log('Peel for game:', gameNumber, 'Tile:', peeledTile);
+      }
+    }).catch(error => {
+      console.error('Error distributing tiles:', error);
+    });
+  }
 
   // Shuffle player rack
   const shuffleLetters = () => {
@@ -492,9 +517,11 @@ function BogoGram() {
       )}
       <div>
         <button onClick={startGame}>Start game</button>
-        <button onClick={distributeLetters}>Distribute</button>
+        <button onClick={() => distributeLetters()} disabled={tilesDistributed}>Distribute</button>
+        <p className="game-name-display">{gameName ? `Current Game: ${gameName}` : "No game started"}</p>
         <button onClick={shuffleLetters}>Shuffle</button>
         <button onClick={rebuildGrid}>Rebuild</button>
+        <button onClick={peel} disabled={!(tilesDistributed && !playerLetters.length) || !tilesInBag}>PEEL</button>
       </div>
       <div>
         <h2 className="player-letters">Player Letters:</h2>

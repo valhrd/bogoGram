@@ -97,6 +97,14 @@ input[type="text"]:disabled, select:disabled {
     color: #d4d4d4; /* Grey text for disabled input to maintain clarity */
 }
 
+.game-name-display {
+    color: #fff; /* White color for visibility */
+    background-color: #333; /* Darker background for contrast */
+    padding: 10px; /* Padding for better spacing */
+    margin: 10px 0; /* Vertical margin for separation */
+    border-radius: 5px; /* Rounded corners */
+}
+
 /*
 // This is all new, input CSS
 input[type="cell"] {
