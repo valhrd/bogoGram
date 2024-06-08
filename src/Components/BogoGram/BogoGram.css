@@ -26,6 +26,9 @@
     cursor: pointer;
     background-color: rgba(255, 255, 255, 0);
     color: rgb(255, 255, 255); /* Ensure letters are black on white background */
+
+    /* Disable highlighting letter */
+    user-select: none;
 }
 
 .cell.selected {
@@ -38,6 +41,16 @@ input, select, button {
 
 .player-letters {
     color: white;
+}
+
+.player-letters .player-letter {
+    border: 1px solid rgb(255, 255, 255);
+    width: 30px; /* Adjusted to fit a larger grid on the screen */
+    height: 30px; /* Adjusted to fit a larger grid on the screen */
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    margin: 2px
 }
 
 button {
@@ -84,3 +97,26 @@ input[type="text"]:disabled, select:disabled {
     color: #d4d4d4; /* Grey text for disabled input to maintain clarity */
 }
 
+/*
+// This is all new, input CSS
+input[type="cell"] {
+    width: 15px;
+    height: 15px;
+    text-align: center;
+    border: 1px solid white; 
+    border-radius: 0; 
+    color: white; 
+    background-color: #333; 
+    padding: 8px; 
+
+.cell input {
+    border: none; 
+    background-color: transparent; 
+    color: black; 
+    font-size: 16px;
+    width: 100%; 
+    height: 100%; 
+    text-align: center;
+    caret-color: transparent;
+}
+*/

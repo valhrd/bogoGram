@@ -8,24 +8,29 @@ import { useCollectionData } from 'react-firebase-hooks/firestore'; //until here
 */
 
 import { initializeApp } from 'firebase/app'; 
-import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { getAuth, signInWithPopup, GoogleAuthProvider, verifyPasswordResetCode } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 
 import { ref, onValue, set } from 'firebase/database';
 import './BogoGram.css';
 
-
 // Create dictionary
 import dictionary from './populateTrie';
+
+// Testing Cell class
+import Cell from './Cell';
 
 
 // Grid formation plus tilebag
 const gridSize = 35;
 const initialGrid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(''));
-const letters = 'AAABBBCCCDDDDEEEEEEEEEEEEEEEEEEFFFGGGGHHHIIIIIIIIIIIIJJKKLLLLLMMMNNNNNNNNOOOOOOOOOOOPPPQQRRRRRRRRRSSSSSSTTTTTTTTTUUUUUUVVVWWWXXYYYZZ';
-let lettersArray;
 
+
+// Temporary testing
+// const letters = 'AAABBBCCCDDDDEEEEEEEEEEEEEEEEEEFFFGGGGHHHIIIIIIIIIIIIJJKKLLLLLMMMNNNNNNNNOOOOOOOOOOOPPPQQRRRRRRRRRSSSSSSTTTTTTTTTUUUUUUVVVWWWXXYYYZZ';
+const letters = 'HAPPYBOOMVISTA';
+let lettersArray;
 
 
 console.log(lettersArray);
@@ -53,12 +58,28 @@ const firestore = getFirestore(app);
 function BogoGram() {
   const [grid, setGrid] = useState(initialGrid);
   const [currentWord, setCurrentWord] = useState('');
+  
+  // For word connectivity
+  const [mustConnect, setMustConnect] = useState(false);
+  const [wordConnect, setWordConnect] = useState(true);
+
+  // Meant to keep track of previous values of startRow and startCol for direction toggling
+  const [prevRow, setPrevRow] = useState(null);
+  const [prevCol, setPrevCol] = useState(null);
   const [startRow, setStartRow] = useState(null);
   const [startCol, setStartCol] = useState(null);
-  const [direction, setDirection] = useState('horizontal');
-  const [playerLetters, setPlayerLetters] = useState([]);
-  const [user] = useAuthState(auth); //new
 
+  // const [direction, setDirection] = useState('horizontal'); // Unneeded as of now
+  
+  // For toggling direction of play
+  const [horizontal, setHorizontal] = useState(1);
+
+  const [playerLetters, setPlayerLetters] = useState([]);
+  
+  // Keeps track of all words played by this player;
+  const wordsPlayed = [];
+  
+  const [user] = useAuthState(auth); //new
   const signIn = async () => { //new function
     const provider = new GoogleAuthProvider(); // Create a Google Auth provider
     try {
@@ -100,6 +121,7 @@ function BogoGram() {
   const handleCellClick = (row, col) => {
     setStartRow(row);
     setStartCol(col);
+    setHorizontal(!horizontal); // Change: keeps track of number of clicks
   };
 
 
@@ -109,28 +131,78 @@ function BogoGram() {
   };
 
 
-
+  /*
   const handleDirectionChange = (e) => {
     setDirection(e.target.value);
   };
+  */
 
 
-
+  // TODO: Might have to redo this whole game logic (Accomodate parallel play, extension of words (e.g. ING is invalid but KEEPING is valid), remember to push them to wordsPlayed array)
   const placeWord = () => {
-    if (!currentWord || startRow === null || startCol === null) return;
-
-    // Check validity
-    if (!dictionary.search(currentWord)) {
-      alert("Invalid word");
+    if (!currentWord || startRow === null || startCol === null) {
       return;
+    }
+
+    const endRow = startRow + (!horizontal ? currentWord.length - 1 : 0);
+    const endCol = startCol + (horizontal ? currentWord.length - 1 : 0);
+
+    // Check for connectivity between words
+    if (mustConnect) {
+      let temp = "";
+
+      // Check cell to the left and right (for horizontal) or above and below (for vertical)
+      if (horizontal) {
+        if (startCol > 0) temp += grid[startRow][startCol - 1]; // Left of the start position
+        if (endCol < gridSize - 1) temp += grid[startRow][endCol + 1]; // Right of the end position
+      } else {
+        if (startRow > 0) temp += grid[startRow - 1][startCol]; // Above the start position
+        if (endRow < gridSize - 1) temp += grid[endRow + 1][startCol]; // Below the end position
+      }
+
+      // Check cells adjacent to each letter in the current word
+      for (let i = 0; i < currentWord.length; i++) {
+        const row = startRow + (horizontal ? 0 : i);
+        const col = startCol + (horizontal ? i : 0);
+
+        if (horizontal) {
+          if (row > 0) temp += grid[row - 1][col]; // Above the current cell
+          if (row < gridSize - 1) temp += grid[row + 1][col]; // Below the current cell
+        } else {
+          if (col > 0) temp += grid[row][col - 1]; // Left of the current cell
+          if (col < gridSize - 1) temp += grid[row][col + 1]; // Right of the current cell
+        }
+      }
+
+      if (!temp) {
+        alert("Words must connect!");
+        return;
+      }
+    }
+
+
+    // New way to help check words
+    let i = 1;
+    let extendedWord = "";
+    if (horizontal) {
+      while (startCol - i >= 0 && grid[startRow][startCol - i]) {
+        extendedWord = grid[startRow][startCol - i] + extendedWord;
+        i++;
+      }
+    } else {
+      while (startRow - i >= 0 && grid[startRow - i][startCol]) {
+        extendedWord = grid[startRow - i][startCol] + extendedWord;
+        i++;
+      }
     }
 
     const newGrid = grid.map(row => row.slice());
     const newPlayerLetters = [...playerLetters];
 
+    // TODO: add icon to signify direction word is being played and complete dictionary check in case there are letters pass the word
     for (let i = 0; i < currentWord.length; i++) {
-      const row = startRow + (direction === 'vertical' ? i : 0);
-      const col = startCol + (direction === 'horizontal' ? i : 0);
+      const row = startRow + (!horizontal ? i : 0); // Changed to taking away need for option menu to select horizontal or vertical play
+      const col = startCol + (horizontal ? i : 0); //
 
       if (row >= gridSize || col >= gridSize || newGrid[row][col] !== '') {
         alert('Word cannot be placed here');
@@ -142,10 +214,58 @@ function BogoGram() {
         return;
       }
 
+      let indexOne = 1;
+      let indexTwo = 1;
+      let newWord = "";
+      // Allow parallel play
+      if (horizontal) {
+        while (row - indexOne >= 0 && grid[row - indexOne][col]) {
+          newWord = grid[row - indexOne][col] + newWord;
+          indexOne++;
+        }
+        newWord += currentWord[i];
+        while (row + indexTwo < grid.length && grid[row + indexTwo][col]) {
+          newWord += grid[row + indexTwo][col];
+          indexTwo++;
+        }
+      } else {
+        while (col - indexOne >= 0 && grid[row][col - indexOne]) {
+          newWord = grid[row][col - indexOne] + newWord;
+          indexOne++;
+        }
+        newWord += currentWord[i];
+        while (col + indexTwo < grid.length && grid[row][col + indexTwo]) {
+          newWord += grid[row][col + indexTwo];
+          indexTwo++;
+        }
+      }
+
+      if (newWord.length > 1 && !dictionary.search(newWord)) {
+        alert("Invalid word: " + newWord);
+        return;
+      }
+      // For debugging purposes
+      console.log(newWord);
+
+      // This part's bugged probably (ask GPT)
       newPlayerLetters.splice(newPlayerLetters.indexOf(currentWord[i]), 1);
       newGrid[row][col] = currentWord[i];
+    
+      // Append to extendedWord
+      extendedWord += currentWord[i];
+
+      if (i === currentWord.length - 1) {
+        if (!dictionary.search(extendedWord)) {
+          alert("Invalid word: " + extendedWord);
+          return;
+        }
+        // For debugging purposes
+        console.log(extendedWord);
+      }
+
     }
 
+    /*
     set(ref(database, 'grid'), newGrid)
       .then(() => setGrid(newGrid))
       .catch(error => console.error('Error updating the database grid:', error));
@@ -153,10 +273,25 @@ function BogoGram() {
     set(ref(database, 'playerLetters'), newPlayerLetters)
       .then(() => setPlayerLetters(newPlayerLetters))
       .catch(error => console.error('Error updating the database playerLetters:', error));
+    */
+
+    // Testing Promise.all for parallel efficiency
+    Promise.all([
+      set(ref(database, 'grid'), newGrid),
+      set(ref(database, 'playerLetters'), newPlayerLetters)
+    ])
+    .then(() => {
+      setGrid(newGrid);
+      setPlayerLetters(newPlayerLetters);
+    })
+    .catch(error => console.error('Error updating the database:', error));
 
     setCurrentWord('');
     setStartRow(null);
     setStartCol(null);
+
+    // After a word is played all subsequent words must connect to it
+    setMustConnect(true);
   };
 
 
@@ -181,15 +316,16 @@ function BogoGram() {
     .catch(error => {
       console.error('Error clearing the board:', error);
     });
+
+    setMustConnect(false);
   };
-
-
 
   // Distribute letters to players
   const distributeLetters = () => {
-    const newLetters = [];
-    for (let i = 0; i < 7; i++) {
-      // newLetters.push(letters[Math.floor(Math.random() * letters.length)]);
+
+    // Changes distribution function
+    const newLetters = [...playerLetters]; // Changes empty array to getting previous tiles
+    for (let i = newLetters.length; i < 14; i++) { // Changes starting value of i from 0 to previous playerLetters array length
       if (lettersArray === undefined || lettersArray.length === 0) {
         break;
       }
@@ -206,6 +342,137 @@ function BogoGram() {
   };
 
 
+  // Shuffle player rack
+  const shuffleLetters = () => {
+    const newLetters = playerLetters;
+    newLetters.sort((firstLetter, secondLetter) => 0.5 - Math.random());
+    set(ref(database, 'playerLetters'), newLetters)
+      .then(() => {
+        setPlayerLetters(newLetters);
+      })
+      .catch(error => {
+        console.error('Error distributing letters:', error);
+      });
+  }
+
+  const rebuildGrid = () => {
+    grid.map((row, rowIndex) => (
+      row.map((cell, colIndex) => {
+        if (cell !== "") {
+          playerLetters.push(cell);
+        }
+      }
+    )));
+    clearBoard();
+  }
+
+  // Testing drag and drop functions (from player tile rack to board)
+  const handleDragOver = (event) => {
+    event.preventDefault();
+  };
+
+  const handleRackDragStart = (event, letter, index) => {
+    event.dataTransfer.setData("text/plain", letter);
+    event.dataTransfer.setData("index", index);
+  };
+
+  const handleRackToBoardDrop = (row, col) => (event) => {
+    handleDragOver(event);
+
+    if (!event.dataTransfer.types.includes("text/plain") || !event.dataTransfer.types.includes("index")) {
+      return; // Abort if the expected types are not present
+    }
+
+    const letter = event.dataTransfer.getData("text/plain");
+    const index = event.dataTransfer.getData("index");
+
+    const newGrid = grid.map(row => row.slice());
+    const newPlayerLetters = [...playerLetters];
+    
+    if (newGrid[row][col]) {
+      newPlayerLetters.push(newGrid[row][col]);
+    }
+    newGrid[row][col] = letter;
+    setGrid(newGrid);
+
+    newPlayerLetters.splice(index, 1);
+    setPlayerLetters(newPlayerLetters);
+
+    set(ref(database, 'grid'), newGrid);
+    set(ref(database, 'playerLetters'), newPlayerLetters);
+
+    // Testing Promise.all for parallel efficiency
+    Promise.all([
+      set(ref(database, 'grid'), newGrid),
+      set(ref(database, 'playerLetters'), newPlayerLetters)
+    ])
+    .then(() => {
+      setGrid(newGrid);
+      setPlayerLetters(newPlayerLetters);
+    })
+    .catch(error => console.error('Error updating the database:', error));
+  }
+
+  // Testing drag and drop functions (from board to player tile rack) (this feature does not work as of now)
+  const handleCellDragStart = (event, letter, row, col) => {
+    event.dataTransfer.setData("text/plain", letter);
+    event.dataTransfer.setData("row", row);
+    event.dataTransfer.setData("col", col);
+  };
+
+  const handleBoardToRackDrop = (event) => {
+    handleDragOver(event);
+
+    const letter = event.dataTransfer.getData("text/plain");
+    const rowIndex = event.dataTransfer.getData("row");
+    const colIndex = event.dataTransfer.getData("col");
+
+    console.log(rowIndex, colIndex);
+
+    const newGrid = grid.map(row => row.slice());
+    
+    setGrid(newGrid);
+  
+    const newPlayerLetters = [...playerLetters];
+    newPlayerLetters.push(letter);
+    setPlayerLetters(newPlayerLetters);
+
+    Promise.all([
+      set(ref(database, 'grid'), newGrid),
+      set(ref(database, 'playerLetters'), newPlayerLetters)
+    ])
+    .catch(error => console.error('Error updating the database:', error));
+  };
+
+  /*
+  // Live typing on grid attempt
+  const handleCellChange = (event, rowIndex, colIndex) => {
+    const { value } = event.target;
+    const newGrid = grid.map((row, rowIdx) =>
+      row.map((cell, colIdx) =>
+        rowIdx === rowIndex && colIdx === colIndex ? value : cell
+      )
+    );
+    setGrid(newGrid);
+    set(ref(database, 'grid'), newGrid)
+      .catch(error => {
+        console.error('Error updating the database grid:', error);
+      });
+  };
+
+  const handleCellKeyDown = (event, rowIndex, colIndex) => {
+    const { key } = event;
+    const nextRowIndex = horizontal ? rowIndex : (key === 'ArrowDown' ? rowIndex + 1 : rowIndex);
+    const nextColIndex = horizontal ? (key === 'ArrowRight' ? colIndex + 1 : colIndex) : colIndex;
+
+    if (nextRowIndex >= 0 && nextRowIndex < gridSize && nextColIndex >= 0 && nextColIndex < gridSize) {
+      const nextCellInput = document.getElementById(`cell-${nextRowIndex}-${nextColIndex}`);
+      if (nextCellInput) {
+        nextCellInput.focus();
+      }
+    }
+  }
+    */
 
   if (!user) {
     return (
@@ -215,8 +482,6 @@ function BogoGram() {
       </div>
     );
   }
-
-
 
   return (
     <div className="App">
@@ -228,12 +493,28 @@ function BogoGram() {
       <div>
         <button onClick={startGame}>Start game</button>
         <button onClick={distributeLetters}>Distribute</button>
+        <button onClick={shuffleLetters}>Shuffle</button>
+        <button onClick={rebuildGrid}>Rebuild</button>
       </div>
       <div>
         <h2 className="player-letters">Player Letters:</h2>
-        <div className="player-letters">
+        <div
+          className="player-letters"
+
+          // Drag and drop from board to player rack
+          onDrop={handleBoardToRackDrop}
+          onDragOver={handleDragOver}
+        >
+          {/* Testing drag and drop feature */}
           {playerLetters.map((letter, index) => (
-            <span key={index} className="player-letter">
+            <span
+              key={index}
+              className="player-letter"
+
+              // Additional code for drag and drop feature
+              draggable
+              onDragStart={(event) => handleRackDragStart(event, letter, index)}
+            >
               {letter}
             </span>
           ))}
@@ -246,10 +527,10 @@ function BogoGram() {
           onChange={handleWordChange}
           placeholder="Enter word"
         />
-        <select value={direction} onChange={handleDirectionChange}>
+        {/*<select value={direction} onChange={handleDirectionChange}>
           <option value="horizontal">Horizontal</option>
           <option value="vertical">Vertical</option>
-        </select>
+        </select>*/}
         <button onClick={placeWord}>Place Word</button>
       </div>
       <div className="grid">
@@ -260,8 +541,24 @@ function BogoGram() {
                 key={colIndex}
                 className={`cell ${startRow === rowIndex && startCol === colIndex ? 'selected' : ''}`}
                 onClick={() => handleCellClick(rowIndex, colIndex)}
+
+                // Testing drag and drop functionality
+                onDragOver={handleDragOver}
+                onDrop={handleRackToBoardDrop(rowIndex, colIndex)}
               >
+                <span
+                  // Drag from board to rack
+                  draggable={cell !== ''}
+                  onDragStart={(event) => handleCellDragStart(event, cell, rowIndex, colIndex)}
+                />
                 {cell}
+                {/* <input // Testing live-editing feature (typing word on board)
+                  id={`cell-${rowIndex}-${colIndex}`}
+                  type="cell"
+                  value={cell}
+                  onChange = {(event) => handleCellChange(event, rowIndex, colIndex)}
+                  onKeyDown = {(event) => handleCellKeyDown(event, rowIndex, colIndex)}
+                /> */}
               </div>
             ))}
           </div>
