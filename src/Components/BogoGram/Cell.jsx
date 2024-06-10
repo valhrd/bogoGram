@@ -1,19 +1,22 @@
-class Cell {
-    constructor() {
-        this.character= "";
-    }
+import React from 'react';
 
-    setChar(char) {
-        this.character = char;
-    }
+function Cell({ letter, key, className, onClick, onDragOver, onDrop, onDragStart }) {
 
-    getChar() {
-        return this.character;
-    }
-
-    clear() {
-        this.character = "";
-    }
+    const cursorStyle = letter ? 'grab' : 'auto';
+    return (
+        <div
+            key={key}
+            className={className}
+            onClick={onClick}
+            onDragOver={onDragOver}
+            onDrop={onDrop}
+            onDragStart={onDragStart}
+            draggable={letter !== ""}
+            style={{cursor : cursorStyle}}
+        >
+        {letter}
+        </div>
+    );
 }
 
 export default Cell;

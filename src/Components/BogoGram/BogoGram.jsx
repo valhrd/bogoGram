@@ -14,7 +14,8 @@ import './BogoGram.css';
 // Create dictionary
 import dictionary from './populateTrie';
 
-// Testing Cell class
+// Tiles
+import Tile from './Tile';
 import Cell from './Cell';
 
 
@@ -138,12 +139,7 @@ function BogoGram() {
   };
 
 
-  /*
-  const handleDirectionChange = (e) => {
-    setDirection(e.target.value);
-  };
-  */
-
+  // ------Potentially useless------
 
   // TODO: Might have to redo this whole game logic (Accomodate parallel play, extension of words (e.g. ING is invalid but KEEPING is valid), remember to push them to wordsPlayed array)
   const placeWord = () => {
@@ -186,7 +182,6 @@ function BogoGram() {
         return;
       }
     }
-
 
     // New way to help check words
     let i = 1;
@@ -272,16 +267,6 @@ function BogoGram() {
 
     }
 
-    /*
-    set(ref(database, 'grid'), newGrid)
-      .then(() => setGrid(newGrid))
-      .catch(error => console.error('Error updating the database grid:', error));
-
-    set(ref(database, 'playerLetters'), newPlayerLetters)
-      .then(() => setPlayerLetters(newPlayerLetters))
-      .catch(error => console.error('Error updating the database playerLetters:', error));
-    */
-
     // Testing Promise.all for parallel efficiency
     Promise.all([
       set(ref(database, 'grid'), newGrid),
@@ -300,6 +285,9 @@ function BogoGram() {
     // After a word is played all subsequent words must connect to it
     setMustConnect(true);
   };
+
+  // ------Potentially useless------
+
 
 
 
@@ -391,15 +379,8 @@ function BogoGram() {
     clearBoard();
   }
 
+  /* Old shit
   // Testing drag and drop functions (from player tile rack to board)
-  const handleDragOver = (event) => {
-    event.preventDefault();
-  };
-
-  const handleRackDragStart = (event, letter, index) => {
-    event.dataTransfer.setData("text/plain", letter);
-    event.dataTransfer.setData("index", index);
-  };
 
   const handleRackToBoardDrop = (row, col) => (event) => {
     handleDragOver(event);
@@ -439,11 +420,6 @@ function BogoGram() {
   }
 
   // Testing drag and drop functions (from board to player tile rack) (this feature does not work as of now)
-  const handleCellDragStart = (event, letter, row, col) => {
-    event.dataTransfer.setData("text/plain", letter);
-    event.dataTransfer.setData("row", row);
-    event.dataTransfer.setData("col", col);
-  };
 
   const handleBoardToRackDrop = (event) => {
     handleDragOver(event);
@@ -455,6 +431,7 @@ function BogoGram() {
     console.log(rowIndex, colIndex);
 
     const newGrid = grid.map(row => row.slice());
+    newGrid[rowIndex][colIndex] = '';
     
     setGrid(newGrid);
   
@@ -468,36 +445,72 @@ function BogoGram() {
     ])
     .catch(error => console.error('Error updating the database:', error));
   };
+  */
 
-  /*
-  // Live typing on grid attempt
-  const handleCellChange = (event, rowIndex, colIndex) => {
-    const { value } = event.target;
-    const newGrid = grid.map((row, rowIdx) =>
-      row.map((cell, colIdx) =>
-        rowIdx === rowIndex && colIdx === colIndex ? value : cell
-      )
-    );
-    setGrid(newGrid);
-    set(ref(database, 'grid'), newGrid)
-      .catch(error => {
-        console.error('Error updating the database grid:', error);
-      });
+  // New functions for drag and drop
+  const handleDragOver = (event) => {
+    event.preventDefault();
   };
 
-  const handleCellKeyDown = (event, rowIndex, colIndex) => {
-    const { key } = event;
-    const nextRowIndex = horizontal ? rowIndex : (key === 'ArrowDown' ? rowIndex + 1 : rowIndex);
-    const nextColIndex = horizontal ? (key === 'ArrowRight' ? colIndex + 1 : colIndex) : colIndex;
-
-    if (nextRowIndex >= 0 && nextRowIndex < gridSize && nextColIndex >= 0 && nextColIndex < gridSize) {
-      const nextCellInput = document.getElementById(`cell-${nextRowIndex}-${nextColIndex}`);
-      if (nextCellInput) {
-        nextCellInput.focus();
-      }
+  const handleDragStart = (event, source, letter, index, row = null, col = null) => {
+    event.dataTransfer.setData("text/plain", letter);
+    event.dataTransfer.setData("source", source);
+    
+    if (row !== null && col !== null) {
+      // If row and col are provided, set them as well
+      event.dataTransfer.setData("row", row);
+      event.dataTransfer.setData("col", col);
+    } else {
+      // Otherwise, set the index
+      event.dataTransfer.setData("index", index);
     }
-  }
-    */
+  };
+  
+  const handleCellDragStart = (event, letter, row, col) => {
+    handleDragStart(event, 'board', letter, null, row, col);
+  };
+
+  const handleRackDragStart = (event, letter, index) => {
+    handleDragStart(event, 'rack', letter, index);
+  };
+
+  const handleDrop = (targetType, targetRow = null, targetCol = null) => (event) => {
+    event.preventDefault();
+  
+    const source = event.dataTransfer.getData("source");
+    const letter = event.dataTransfer.getData("text/plain");
+
+    const newGrid = grid.map(row => row.slice());
+    const newPlayerLetters = [...playerLetters];
+  
+    if (source === 'board') {
+      const sourceRow = event.dataTransfer.getData("row");
+      const sourceCol = event.dataTransfer.getData("col");
+      newGrid[sourceRow][sourceCol] = '';
+    } else if (source === 'rack') {
+      const sourceIndex = event.dataTransfer.getData("index");
+      newPlayerLetters.splice(sourceIndex, 1);
+    }
+  
+    if (targetType === 'board') {
+      if (newGrid[targetRow][targetCol]) {
+        newPlayerLetters.push(newGrid[targetRow][targetCol]);
+      }
+      newGrid[targetRow][targetCol] = letter;
+    } else if (targetType === 'rack') {
+      newPlayerLetters.push(letter);
+    }
+  
+    setGrid(newGrid);
+    setPlayerLetters(newPlayerLetters);
+  
+    Promise.all([
+      set(ref(database, 'grid'), newGrid),
+      set(ref(database, 'playerLetters'), newPlayerLetters)
+    ])
+    .catch(error => console.error('Error updating the database:', error));
+  };
+
 
   if (!user) {
     return (
@@ -526,25 +539,26 @@ function BogoGram() {
       <div>
         <h2 className="player-letters">Player Letters:</h2>
         <div
-          className="player-letters"
+          className="player-tilerack"
 
           // Drag and drop from board to player rack
-          onDrop={handleBoardToRackDrop}
+          onDrop={handleDrop('rack')}
           onDragOver={handleDragOver}
         >
           {/* Testing drag and drop feature */}
-          {playerLetters.map((letter, index) => (
-            <span
-              key={index}
-              className="player-letter"
-
-              // Additional code for drag and drop feature
-              draggable
-              onDragStart={(event) => handleRackDragStart(event, letter, index)}
-            >
-              {letter}
-            </span>
-          ))}
+          <div>
+            {playerLetters.map((letter, index) => (
+              <Tile
+                letter={letter}
+                key={index}
+                className="player-letter"
+                
+                // Additional code for drag and drop feature
+                draggable={true}
+                onDragStart={(event) => handleRackDragStart(event, letter, index)}
+              />
+            ))}
+          </div>
         </div>
       </div>
       <div>
@@ -554,39 +568,24 @@ function BogoGram() {
           onChange={handleWordChange}
           placeholder="Enter word"
         />
-        {/*<select value={direction} onChange={handleDirectionChange}>
-          <option value="horizontal">Horizontal</option>
-          <option value="vertical">Vertical</option>
-        </select>*/}
         <button onClick={placeWord}>Place Word</button>
       </div>
       <div className="grid">
         {grid.map((row, rowIndex) => (
           <div key={rowIndex} className="row">
             {row.map((cell, colIndex) => (
-              <div
+              <Tile
+                letter={cell}
                 key={colIndex}
                 className={`cell ${startRow === rowIndex && startCol === colIndex ? 'selected' : ''}`}
                 onClick={() => handleCellClick(rowIndex, colIndex)}
 
                 // Testing drag and drop functionality
                 onDragOver={handleDragOver}
-                onDrop={handleRackToBoardDrop(rowIndex, colIndex)}
-              >
-                <span
-                  // Drag from board to rack
-                  draggable={cell !== ''}
-                  onDragStart={(event) => handleCellDragStart(event, cell, rowIndex, colIndex)}
-                />
-                {cell}
-                {/* <input // Testing live-editing feature (typing word on board)
-                  id={`cell-${rowIndex}-${colIndex}`}
-                  type="cell"
-                  value={cell}
-                  onChange = {(event) => handleCellChange(event, rowIndex, colIndex)}
-                  onKeyDown = {(event) => handleCellKeyDown(event, rowIndex, colIndex)}
-                /> */}
-              </div>
+                onDrop={handleDrop('board', rowIndex, colIndex)}
+
+                onDragStart={(event) => handleCellDragStart(event, cell, rowIndex, colIndex)}
+              />
             ))}
           </div>
         ))}

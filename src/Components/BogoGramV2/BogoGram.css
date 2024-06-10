@@ -1,0 +1,122 @@
+.BogoGram {
+    font-family: 'Montserrat', sans-serif;
+    text-align: center;
+}
+
+.game-title {
+    color: white;
+}
+
+.grid {
+    display: inline-block;
+    margin: 20px;
+}
+
+.row {
+    display: flex;
+}
+
+.cell {
+    width: 30px; /* Adjusted to fit a larger grid on the screen */
+    height: 30px; /* Adjusted to fit a larger grid on the screen */
+    border: 1px solid rgb(255, 255, 255);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0);
+    color: rgb(255, 255, 255); /* Ensure letters are black on white background */
+
+    /* Disable highlighting letter */
+    user-select: none;
+}
+
+.cell.selected {
+    background-color: #ddd;
+}
+
+input, select, button {
+    margin: 5px;
+}
+
+.player-letters {
+    color: white;
+}
+
+.player-tilerack {
+    border: 1px solid rgb(255, 255, 255);
+    height: 36px;
+    min-width: 300px;
+    max-width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.player-tilerack .player-letter {
+    color: white;
+    border: 1px solid rgb(255, 255, 255);
+    width: 30px; /* Adjusted to fit a larger grid on the screen */
+    height: 30px; /* Adjusted to fit a larger grid on the screen */
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    margin: 2px;
+    cursor: grab;
+}
+
+.player-letters .player-letter:active {
+    opacity: 0.7;
+    border: 1px solid rgba(255, 255, 255, 0.438);
+}
+
+button {
+    background-color: #007BFF; /* Blue background for the buttons */
+    color: white; /* White text for good contrast */
+    padding: 10px 20px; /* Padding around the text */
+    border: none; /* No border for a clean look */
+    border-radius: 5px; /* Rounded corners for a modern appearance */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s, transform 0.3s; /* Smooth transitions for interactive effects */
+    outline: none; /* Remove outline to keep the design clean */
+}
+
+button:hover, button:focus {
+    background-color: #0056b3; /* A darker shade of blue for hover and focus */
+    transform: scale(1.05); /* Slightly enlarge the button on hover or focus */
+}
+
+button:disabled {
+    background-color: #666; /* Grey background for disabled buttons */
+    color: #ccc; /* Light grey text to indicate the button is inactive */
+    cursor: not-allowed; /* Cursor indicates that the button is not interactable */
+}
+
+input[type="text"], select {
+    width: calc(13%); /* Slightly less than full width to accommodate padding */
+    padding: 12px 20px; /* Good padding for ease of interaction */
+    margin: 20px 10px; /* Margin for spacing between elements */
+    display: inline-block; /* Ensures proper alignment */
+    border: 2px solid #ccc; /* Subtle border for aesthetics */
+    border-radius: 5px; /* Rounded corners for a modern look */
+    box-sizing: border-box; /* Adjusts box sizing to include padding and border */
+    background-color: #f8f8f8; /* Light background for visibility */
+    color: #333; /* Dark text for readability */
+}
+
+input[type="text"]:focus, select:focus {
+    border-color: #0056b3; /* Blue border on focus to match the theme */
+    background-color: #e8f0fe; /* Very light blue background on focus for visual feedback */
+}
+
+input[type="text"]:disabled, select:disabled {
+    background-color: #e7e7e7; /* Grey background for disabled input to indicate non-interactivity */
+    color: #d4d4d4; /* Grey text for disabled input to maintain clarity */
+}
+
+.game-name-display {
+    color: #fff; /* White color for visibility */
+    background-color: #333; /* Darker background for contrast */
+    padding: 10px; /* Padding for better spacing */
+    margin: 10px 0; /* Vertical margin for separation */
+    border-radius: 5px; /* Rounded corners */
+}
