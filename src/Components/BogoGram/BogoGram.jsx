@@ -76,6 +76,9 @@ function BogoGram() {
   // this is to lock the distribute and peel buttons when necessary
   const [tilesDistributed, setTilesDistributed] = useState(false);
   const [tilesInBag, setTilesInBag] = useState(true);
+
+  // this is for selection of 1 letter to dump
+  const [currDump, setCurrDump] = useState('');
   
   // const [direction, setDirection] = useState('horizontal'); // Unneeded as of now
   
@@ -137,6 +140,10 @@ function BogoGram() {
   const handleWordChange = (e) => {
     setCurrentWord(e.target.value.toUpperCase());
   };
+
+  const handleLetterChange = (e) => {
+    setCurrDump(e.target.value.toUpperCase());
+  }
 
 
   // ------Potentially useless------
@@ -355,6 +362,37 @@ function BogoGram() {
     });
   }
 
+  // Dump: allows a player to return 1 letter to the bag and get back 3 randomly drawn ones
+  const dump = () => {
+    if (currDump.length !== 1) {
+        alert("Please enter exactly one letter to dump.");
+        return;
+    }
+    const functions = getFunctions(app);
+    const dumpTile = httpsCallable(functions, 'dumpTile');
+    dumpTile({ gameID: gameNumber, tile: currDump }).then((result) => {
+        const newTiles = result.data.tiles;
+        if (newTiles.includes("*")) {
+            setTilesInBag(false);
+            alert("No more tiles in the bag!");
+        } else {
+            setPlayerLetters(prevLetters => {
+                // Filter out the dumped tile from the current letters only once
+                const indexToRemove = prevLetters.indexOf(currDump);
+                return [
+                    ...prevLetters.slice(0, indexToRemove),
+                    ...prevLetters.slice(indexToRemove + 1),
+                    ...newTiles
+                ];
+            });
+            console.log('Dump and new tiles for game:', gameNumber, 'Tiles:', newTiles);
+        }
+        setCurrDump(''); // Clear the input field after dumping
+    }).catch(error => {
+        console.error('Error during dump operation:', error);
+    });
+}
+
   // Shuffle player rack
   const shuffleLetters = () => {
     const newLetters = playerLetters;
@@ -569,6 +607,17 @@ function BogoGram() {
           placeholder="Enter word"
         />
         <button onClick={placeWord}>Place Word</button>
+      </div>
+      <div>
+        <input
+            type="text"
+            value={currDump}
+            onChange={handleLetterChange}
+            placeholder="Enter letter to dump"
+            maxLength="1"
+            className="dump-input"  // Apply custom class for styling
+        />
+        <button onClick={dump} disabled={currDump.length !== 1} className="dump-button">DUMP!</button>
       </div>
       <div className="grid">
         {grid.map((row, rowIndex) => (

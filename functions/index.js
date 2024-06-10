@@ -33,11 +33,16 @@ exports.createGame = functions.https.onCall(async (data, content) => {
     throw new functions.https.HttpsError("unauthenticated",
         "call the function when authenticated  ");
   }
+  const letters = "AAABBBCCCDDDDEEEEEEEEEEEEEEEEEE" +
+                  "FFFGGGGHHHIIIIIIIIIIIIJJKKLLLLLMMM" +
+                  "NNNNNNNNOOOOOOOOOOOPPPQQRRRRRRRRR" +
+                  "SSSSSSTTTTTTTTTUUUUUUVVVWWWXXYYYZZ";
+  const shuffledLetters = shuffleArray(letters.split(""));
   const gameDataRef = firestore.collection("gameData").doc();
   await gameDataRef.set( {
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     playerID: content.auth.uid,
-    tiles: [],
+    tiles: shuffledLetters,
   });
   return {gameID: gameDataRef.id};
 });
@@ -52,17 +57,14 @@ exports.distributeTiles = functions.https.onCall(async (data, context) => {
   if (!(await gameDataRef.get()).exists) {
     throw new Error("Game not found.");
   }
-
-  /*
-  const letters = "AAABBBCCCDDDDEEEEEEEEEEEEEEEEEE" +
-  "FFFGGGGHHHIIIIIIIIIIIIJJKKLLLLLMMM" +
-  "NNNNNNNNOOOOOOOOOOOPPPQQRRRRRRRRR" +
-  "SSSSSSTTTTTTTTTUUUUUUVVVWWWXXYYYZZ";
-  */
-  const letters = "AABBCCE";
-  const shuffledLetters = shuffleArray(letters.split(""));
-  const tilesToPlayer = shuffledLetters.slice(0, 7);
-  const remainingTiles = shuffledLetters.slice(7);
+  const doc = await gameDataRef.get();
+  /* const letters = "AABBCCE"; */
+  const tiles = doc.data().tiles;
+  if (tiles.length < 7) {
+    throw new Error("Not enough tiles left.");
+  }
+  const tilesToPlayer = tiles.slice(0, 7);
+  const remainingTiles = tiles.slice(7);
 
   await gameDataRef.update({tiles: remainingTiles});
 
@@ -95,3 +97,34 @@ exports.peel = functions.https.onCall(async (data, context) => {
   // Return the tile
   return {tile: tilesToPlayer};
 });
+
+exports.dumpTile = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("unauthenticated",
+        "The function must be called while authenticated.");
+  }
+
+  const gameDataRef = admin.firestore().collection("gameData").doc(data.gameID);
+  const doc = await gameDataRef.get();
+  if (!doc.exists) {
+    throw new Error("Game not found.");
+  }
+
+  const serverTiles = doc.data().tiles;
+  // Handle the case where there are fewer than 3 tiles left
+  if (serverTiles.length < 3) {
+    await gameDataRef.update({
+      tiles: admin.firestore.FieldValue.arrayRemove(...serverTiles),
+    });
+    return {tiles: serverTiles.concat(Array(3 - serverTiles.length).fill("*"))};
+  }
+  const randomIndex = Math.floor(Math.random() * serverTiles.length);
+  serverTiles.splice(randomIndex, 0, data.tile);
+  const tilesToPlayer = serverTiles.slice(0, 3);
+  await gameDataRef.update({
+    tiles: serverTiles.slice(3),
+  });
+
+  return {tiles: tilesToPlayer};
+});
+
