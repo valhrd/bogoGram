@@ -105,6 +105,19 @@ input[type="text"]:disabled, select:disabled {
     border-radius: 5px; /* Rounded corners */
 }
 
+input[type="text"].dump-input {
+    width: 50px;  
+    padding: 8px;
+    margin: 5px;
+    text-align: center;  
+}
+
+button.dump-button {
+    padding: 8px 16px;
+    margin-left: 5px;
+}
+
+
 /*
 // This is all new, input CSS
 input[type="cell"] {
