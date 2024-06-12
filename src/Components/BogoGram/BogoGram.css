@@ -105,6 +105,7 @@ input[type="text"]:disabled, select:disabled {
     border-radius: 5px; /* Rounded corners */
 }
 
+<<<<<<< Updated upstream
 input[type="text"].dump-input {
     width: 50px;  
     padding: 8px;
@@ -141,3 +142,10 @@ input[type="cell"] {
     caret-color: transparent;
 }
 */
+=======
+.check-words-display {
+    margin-top: 20px;
+    font-size: 16px;
+    color: #4CAF50; /* Change color based on your design */
+}
+>>>>>>> Stashed changes

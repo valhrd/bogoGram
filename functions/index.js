@@ -110,7 +110,7 @@ exports.dumpTile = functions.https.onCall(async (data, context) => {
     throw new Error("Game not found.");
   }
 
-  const serverTiles = doc.data().tiles;
+  let serverTiles = doc.data().tiles;
   // Handle the case where there are fewer than 3 tiles left
   if (serverTiles.length < 3) {
     await gameDataRef.update({
@@ -119,7 +119,10 @@ exports.dumpTile = functions.https.onCall(async (data, context) => {
     return {tiles: serverTiles.concat(Array(3 - serverTiles.length).fill("*"))};
   }
   const randomIndex = Math.floor(Math.random() * serverTiles.length);
-  serverTiles.splice(randomIndex, 0, data.tile);
+  serverTiles = [
+    ...serverTiles.slice(0, randomIndex), data.tile,
+    ...serverTiles.slice(randomIndex),
+  ];
   const tilesToPlayer = serverTiles.slice(0, 3);
   await gameDataRef.update({
     tiles: serverTiles.slice(3),
