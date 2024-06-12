@@ -639,15 +639,6 @@ function BogoGram() {
       </div>
       <div>
         <input
-          type="text"
-          value={currentWord}
-          onChange={handleWordChange}
-          placeholder="Enter word"
-        />
-        <button onClick={placeWord}>Place Word</button>
-      </div>
-      <div>
-        <input
             type="text"
             value={currDump}
             onChange={handleLetterChange}
