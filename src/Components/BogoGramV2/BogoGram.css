@@ -120,3 +120,9 @@ input[type="text"]:disabled, select:disabled {
     margin: 10px 0; /* Vertical margin for separation */
     border-radius: 5px; /* Rounded corners */
 }
+
+.check-words-display {
+    margin-top: 20px;
+    font-size: 16px;
+    color: #4CAF50; /* Change color based on your design */
+}

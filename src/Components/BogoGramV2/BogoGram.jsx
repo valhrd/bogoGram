@@ -6,17 +6,16 @@ import { getAuth, signInWithPopup, GoogleAuthProvider, connectAuthEmulator, veri
 import { collection, getFirestore, query, orderBy, limit } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
-
+import Trie from './Trie'; //new 11 Jun
+// import dictionaryData from './dictionary.json';
 
 import { ref, onValue, set } from 'firebase/database';
 import './BogoGram.css';
 
-// Create dictionary
-import dictionary from './populateTrie';
-
 // Tiles
 import Tile from './Tile';
-import Cell from './Cell';
+import TilesPlayed from './TilesPlayed';
+
 
 // Grid formation plus tilebag
 const gridSize = 35;
@@ -27,6 +26,9 @@ const initialGrid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(''
 // const letters = 'AAABBBCCCDDDDEEEEEEEEEEEEEEEEEEFFFGGGGHHHIIIIIIIIIIIIJJKKLLLLLMMMNNNNNNNNOOOOOOOOOOOPPPQQRRRRRRRRRSSSSSSTTTTTTTTTUUUUUUVVVWWWXXYYYZZ';
 const letters = 'HAPPYBOOMVISTA';
 let lettersArray;
+
+// Tiles played changes
+const tPlayed = new TilesPlayed();
 
 
 console.log(lettersArray);
@@ -60,8 +62,6 @@ function BogoGram() {
   const [wordConnect, setWordConnect] = useState(true);
 
   // Meant to keep track of previous values of startRow and startCol for direction toggling
-  const [prevRow, setPrevRow] = useState(null);
-  const [prevCol, setPrevCol] = useState(null);
   const [startRow, setStartRow] = useState(null);
   const [startCol, setStartCol] = useState(null);
 
@@ -75,16 +75,19 @@ function BogoGram() {
   // this is to lock the distribute and peel buttons when necessary
   const [tilesDistributed, setTilesDistributed] = useState(false);
   const [tilesInBag, setTilesInBag] = useState(true);
+
+  // this is for selection of 1 letter to dump
+  const [currDump, setCurrDump] = useState('');
   
-  // const [direction, setDirection] = useState('horizontal'); // Unneeded as of now
+  //for dictionary checking (11 Jun)
+  const [dictionary, setDictionary] = useState(null);
+  const [validationMessage, setValidationMessage] = useState('');  //this is to change a state after checking if all the words are valid
   
   // For toggling direction of play
   const [horizontal, setHorizontal] = useState(1);
 
   const [playerLetters, setPlayerLetters] = useState([]);
-  
-  // Keeps track of all words played by this player;
-  const wordsPlayed = [];
+
   
   const [user] = useAuthState(auth); 
   const signIn = async () => { 
@@ -110,6 +113,16 @@ function BogoGram() {
 
 
   useEffect(() => {
+    if (!dictionary) { //new on 11 jun
+      fetch('/dictionary.json')  // Assuming your app is served from the root
+        .then(response => response.json())
+        .then(data => {
+          const loadedDictionary = Trie.deserialize(JSON.stringify(data));
+          setDictionary(loadedDictionary);
+        })
+        .catch(error => console.error('Failed to load dictionary:', error));
+    }
+
     const gridRef = ref(database, 'grid');
     onValue(gridRef, (snapshot) => {
       const data = snapshot.val();
@@ -121,7 +134,7 @@ function BogoGram() {
       const data = snapshot.val();
       if (data) setPlayerLetters(data);
     });
-  }, []);
+  }, [dictionary]); //new 11 Jun
 
 
 
@@ -136,6 +149,14 @@ function BogoGram() {
   const handleWordChange = (e) => {
     setCurrentWord(e.target.value.toUpperCase());
   };
+
+
+
+  const handleLetterChange = (e) => {
+    setCurrDump(e.target.value.toUpperCase());
+  }
+
+
 
 
   // ------Potentially useless------
@@ -320,6 +341,9 @@ function BogoGram() {
       console.error('Error clearing the board:', error);
     });
 
+    // Tiles played changes
+    tPlayed.clear();
+
     setMustConnect(false);
   };
 
@@ -354,6 +378,117 @@ function BogoGram() {
     });
   }
 
+
+
+  // Dump: allows a player to return 1 letter to the bag and get back 3 randomly drawn ones
+  const dump = () => {
+    if (currDump.length !== 1) {
+        alert("Please enter exactly one letter to dump.");
+        return;
+    }
+    const functions = getFunctions(app);
+    const dumpTile = httpsCallable(functions, 'dumpTile');
+    dumpTile({ gameID: gameNumber, tile: currDump }).then((result) => {
+        const newTiles = result.data.tiles;
+        if (newTiles.includes("*")) {
+            setTilesInBag(false);
+            alert("No more tiles in the bag!");
+        } else {
+            setPlayerLetters(prevLetters => {
+                // Filter out the dumped tile from the current letters only once
+                const indexToRemove = prevLetters.indexOf(currDump);
+                return [
+                    ...prevLetters.slice(0, indexToRemove),
+                    ...prevLetters.slice(indexToRemove + 1),
+                    ...newTiles
+                ];
+            });
+            console.log('Dump and new tiles for game:', gameNumber, 'Tiles:', newTiles);
+        }
+        setCurrDump(''); // Clear the input field after dumping
+    }).catch(error => {
+        console.error('Error during dump operation:', error);
+    });
+  }
+
+
+  
+  // word checker: for end of game, to check if all words are valid (local/react instead of server for latency and operational cost)
+  const checkWordsInGrid = (grid, dictionary) => {
+    const gridSize = grid.length;
+    let wordsToCheck = [];
+  
+    // Extract horizontal words and log them
+    for (let row = 0; row < gridSize; row++) {
+      const horizontalWords = extractWordsFromLine(grid[row]);
+      // console.log(`Horizontal words in row ${row}:`, horizontalWords);
+      wordsToCheck = wordsToCheck.concat(horizontalWords);
+    }
+  
+    // Extract vertical words and log them
+    for (let col = 0; col < gridSize; col++) {
+      let columnArray = [];
+      for (let row = 0; row < gridSize; row++) {
+        columnArray.push(grid[row][col]);
+      }
+      const verticalWords = extractWordsFromLine(columnArray);
+      // console.log(`Vertical words in column ${col}:`, verticalWords);
+      wordsToCheck = wordsToCheck.concat(verticalWords);
+    }
+  
+    // Logging all words found
+    console.log(wordsToCheck)
+
+    // Check all words using the Trie and log each check
+    return wordsToCheck.every(word => {
+      const isValid = dictionary.search(word);
+      console.log(`Checking word '${word}':`, isValid ? 'Valid' : 'Invalid');
+      return isValid;
+    });
+  };
+  
+  // Helper function to extract words from a line (array of letters)
+  
+  const extractWordsFromLine = (line) => {
+    // Convert the array of characters into a string
+  
+    // Function now returns a word array instead of a string
+    const words = [];
+    let word = '';
+
+    // If the current cell is not empty we append it to the string, once we meet an empty cell, depending on the
+    // length of the word, we add it to the list of words found along that row/column
+    for (let i = 0; i < gridSize; i++) {
+      if (line[i] !== '') {
+        word += line[i];
+      } else {
+        if (word.length >= 2) {
+          words.push(word);
+        }
+        word = '';
+      }
+    }
+
+    return words;
+  };
+  
+  
+  const handleCheckWords = () => {
+    if (!tPlayed.areAllTilesConnected()) {
+      setValidationMessage("You have unconnected tiles!");
+      return;
+    }
+    if (dictionary && checkWordsInGrid(grid, dictionary)) {
+      console.log('All words valid');
+      setValidationMessage("All words are valid!");
+    } else {
+      console.log('Invalid word(s) found');
+      setValidationMessage("You have invalid words!");
+    }
+  };
+
+
+
   // Shuffle player rack
   const shuffleLetters = () => {
     const newLetters = playerLetters;
@@ -377,74 +512,6 @@ function BogoGram() {
     )));
     clearBoard();
   }
-
-  /* Old shit
-  // Testing drag and drop functions (from player tile rack to board)
-
-  const handleRackToBoardDrop = (row, col) => (event) => {
-    handleDragOver(event);
-
-    if (!event.dataTransfer.types.includes("text/plain") || !event.dataTransfer.types.includes("index")) {
-      return; // Abort if the expected types are not present
-    }
-
-    const letter = event.dataTransfer.getData("text/plain");
-    const index = event.dataTransfer.getData("index");
-
-    const newGrid = grid.map(row => row.slice());
-    const newPlayerLetters = [...playerLetters];
-    
-    if (newGrid[row][col]) {
-      newPlayerLetters.push(newGrid[row][col]);
-    }
-    newGrid[row][col] = letter;
-    setGrid(newGrid);
-
-    newPlayerLetters.splice(index, 1);
-    setPlayerLetters(newPlayerLetters);
-
-    set(ref(database, 'grid'), newGrid);
-    set(ref(database, 'playerLetters'), newPlayerLetters);
-
-    // Testing Promise.all for parallel efficiency
-    Promise.all([
-      set(ref(database, 'grid'), newGrid),
-      set(ref(database, 'playerLetters'), newPlayerLetters)
-    ])
-    .then(() => {
-      setGrid(newGrid);
-      setPlayerLetters(newPlayerLetters);
-    })
-    .catch(error => console.error('Error updating the database:', error));
-  }
-
-  // Testing drag and drop functions (from board to player tile rack) (this feature does not work as of now)
-
-  const handleBoardToRackDrop = (event) => {
-    handleDragOver(event);
-
-    const letter = event.dataTransfer.getData("text/plain");
-    const rowIndex = event.dataTransfer.getData("row");
-    const colIndex = event.dataTransfer.getData("col");
-
-    console.log(rowIndex, colIndex);
-
-    const newGrid = grid.map(row => row.slice());
-    newGrid[rowIndex][colIndex] = '';
-    
-    setGrid(newGrid);
-  
-    const newPlayerLetters = [...playerLetters];
-    newPlayerLetters.push(letter);
-    setPlayerLetters(newPlayerLetters);
-
-    Promise.all([
-      set(ref(database, 'grid'), newGrid),
-      set(ref(database, 'playerLetters'), newPlayerLetters)
-    ])
-    .catch(error => console.error('Error updating the database:', error));
-  };
-  */
 
   // New functions for drag and drop
   const handleDragOver = (event) => {
@@ -486,6 +553,10 @@ function BogoGram() {
       const sourceRow = event.dataTransfer.getData("row");
       const sourceCol = event.dataTransfer.getData("col");
       newGrid[sourceRow][sourceCol] = '';
+
+      // Tiles played changes
+      tPlayed.removeTile(sourceRow, sourceCol);
+
     } else if (source === 'rack') {
       const sourceIndex = event.dataTransfer.getData("index");
       newPlayerLetters.splice(sourceIndex, 1);
@@ -494,8 +565,15 @@ function BogoGram() {
     if (targetType === 'board') {
       if (newGrid[targetRow][targetCol]) {
         newPlayerLetters.push(newGrid[targetRow][targetCol]);
+        
+        // Tiles played changes
+        tPlayed.removeTile(targetRow, targetCol);
       }
       newGrid[targetRow][targetCol] = letter;
+
+      // Tiles played changes
+      tPlayed.addTile(targetRow, targetCol);
+
     } else if (targetType === 'rack') {
       newPlayerLetters.push(letter);
     }
@@ -509,7 +587,6 @@ function BogoGram() {
     ])
     .catch(error => console.error('Error updating the database:', error));
   };
-
 
   if (!user) {
     return (
@@ -568,6 +645,23 @@ function BogoGram() {
           placeholder="Enter word"
         />
         <button onClick={placeWord}>Place Word</button>
+      </div>
+      <div>
+        <input
+            type="text"
+            value={currDump}
+            onChange={handleLetterChange}
+            placeholder="Enter letter to dump"
+            maxLength="1"
+            className="dump-input"  // Apply custom class for styling
+        />
+        <button onClick={dump} disabled={currDump.length !== 1} className="dump-button">DUMP!</button>
+      </div>
+      <div>
+        <button onClick={handleCheckWords} disabled={!(tilesDistributed && !playerLetters.length) /*|| tilesInBag*/}>
+          Check Words
+        </button> 
+        {validationMessage && <p className="check-words-display">{validationMessage}</p>}
       </div>
       <div className="grid">
         {grid.map((row, rowIndex) => (
