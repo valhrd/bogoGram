@@ -7,13 +7,37 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
 
 */
-
 const functions = require("firebase-functions");
 // Import and initialize the Firebase Admin SDK.
 const admin = require("firebase-admin");
 admin.initializeApp();
 const firestore = admin.firestore();
 
+const adjectives = ["Affectionate", "Majestic", "Playful", "Graceful", "Loyal",
+  "Intelligent", "Gentle", "Energetic", "Vibrant", "Friendly", "Brave",
+  "Cheerful", "Curious", "Loving", "Noble"];
+const colours = ["Red", "Blue", "Green", "Yellow", "Pink", "Orange", "Brown",
+  "Purple", "White", "Black"];
+const animals = ["Dog", "Cat", "Elephant", "Lion", "Tiger", "Giraffe", "Bear",
+  "Dolphin", "Horse", "Penguin", "Monkey", "Kangaroo", "Zebra", "Rabbit",
+  "Panda", "Snake", "Mouse", "Pig", "Dragon", "Deer", "Unicorn", "Chicken",
+  "Cow", "Koala", "Emu", "Crow", "Raven", "Turkey", "Kingfisher", "Hummingbird",
+  "Whale", "Shark", "Eel", "Mudskipper", "Stingray", "Seahorse", "Dolphin",
+  "Crab", "Lobster", "Crayfish", "Guppy", "Tuna", "Salmon", "Eagle",
+  "Panther", "Leopard", "Hawk", "Cod", "Swordfish", "Rhino", "Sardines",
+  "Wolf", "Turtle", "Capybara", "Frog", "Slug", "Sloth", "Goat", "Hamster"];
+// 8850 possibilities
+
+/**
+ * Randomly generates a gameID from the adjectives, colours and animals above
+ * @return {String} a gameID
+ */
+function generateGameId() {
+  const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+  const color = colours[Math.floor(Math.random() * colours.length)];
+  const animal = animals[Math.floor(Math.random() * animals.length)];
+  return `${adjective}${color}${animal}`;
+}
 /**
  * Shuffles the elements of an array using the Fisher-Yates shuffle algorithm.
  *
@@ -33,19 +57,37 @@ exports.createGame = functions.https.onCall(async (data, content) => {
     throw new functions.https.HttpsError("unauthenticated",
         "call the function when authenticated  ");
   }
+  const gameID = generateGameId();
   const letters = "AAABBBCCCDDDDEEEEEEEEEEEEEEEEEE" +
                   "FFFGGGGHHHIIIIIIIIIIIIJJKKLLLLLMMM" +
                   "NNNNNNNNOOOOOOOOOOOPPPQQRRRRRRRRR" +
                   "SSSSSSTTTTTTTTTUUUUUUVVVWWWXXYYYZZ";
   const shuffledLetters = shuffleArray(letters.split(""));
-  const gameDataRef = firestore.collection("gameData").doc();
+  const gameDataRef = firestore.collection("gameData").doc(gameID);
   await gameDataRef.set( {
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    playerID: content.auth.uid,
+    playerID: [content.auth.uid],
     tiles: shuffledLetters,
   });
   return {gameID: gameDataRef.id};
 });
+
+exports.joinGame = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("unauthenticated",
+        "Must be authenticated to join game.");
+  }
+  const gameDataRef = firestore.collection("gameData").doc(data.gameID);
+  const doc = await gameDataRef.get();
+  if (!doc.exists) {
+    throw new Error("Game not found.");
+  }
+  await gameDataRef.update({
+    playerID: admin.firestore.FieldValue.arrayUnion(context.auth.uid),
+  });
+  return {message: "Successfully joined the game"};
+});
+
 
 exports.distributeTiles = functions.https.onCall(async (data, context) => {
   if (!context.auth) {

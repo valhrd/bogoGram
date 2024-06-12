@@ -72,6 +72,10 @@ function BogoGram() {
   const queryConstraints = query(gameDataRef, orderBy('createdAt'), limit(5)); // is this necessary? 
   const [gameStates] = useCollectionData(queryConstraints, { idField: 'gameID' }); // or this
   
+  // For other players to join the game
+  const [inputGameId, setInputGameId] = useState('');
+
+
   // this is to lock the distribute and peel buttons when necessary
   const [tilesDistributed, setTilesDistributed] = useState(false);
   const [tilesInBag, setTilesInBag] = useState(true);
@@ -328,6 +332,27 @@ function BogoGram() {
     });
   }
 
+  // Join game function for other players
+  const handleJoinGame = () => {
+    if (!inputGameId.trim()) {
+      alert("Please enter a valid game ID to join a game.");
+      return;
+    }
+    // Assuming you have initialized Firebase and have access to `getFunctions`
+    const functions = getFunctions(); // getFunctions needs to be initialized appropriately
+    const joinGame = httpsCallable(functions, 'joinGame');
+    joinGame({ gameID: inputGameId.trim() }).then(result => {
+      console.log(result.data.message);
+      let res = inputGameId.trim()
+      setGameNumber(res); // Set the current game ID to the one joined
+      setGameName("Game " + res); // for debugging purposes
+      alert("Successfully joined the game!");
+      setInputGameId(''); // Clear the input field
+    }).catch(error => {
+      console.error('Error joining game:', error);
+      alert("Failed to join game: " + error.message);
+    });
+  };
 
 
   const clearBoard = () => {
@@ -606,6 +631,15 @@ function BogoGram() {
       )}
       <div>
         <button onClick={startGame}>Start game</button>
+        <div>
+        <input
+          type="text"
+          value={inputGameId}
+          onChange={(e) => setInputGameId(e.target.value)}
+          placeholder="Enter Game ID"
+        />
+        <button onClick={handleJoinGame}>Join Game</button>
+      </div>
         <button onClick={() => distributeLetters()} disabled={tilesDistributed}>Distribute</button>
         <p className="game-name-display">{gameName ? `Current Game: ${gameName}` : "No game started"}</p>
         <button onClick={shuffleLetters}>Shuffle</button>
