@@ -644,7 +644,7 @@ function BogoGram() {
         <p className="game-name-display">{gameName ? `Current Game: ${gameName}` : "No game started"}</p>
         <button onClick={shuffleLetters}>Shuffle</button>
         <button onClick={rebuildGrid}>Rebuild</button>
-        <button onClick={peel} disabled={!(tilesDistributed && !playerLetters.length) || !tilesInBag}>PEEL</button>
+        <button onClick={peel} disabled={!(tilesDistributed && !playerLetters.length) || !tilesInBag || !tPlayed.areAllTilesConnected()}>PEEL</button>
       </div>
       <div>
         <h2 className="player-letters">Player Letters:</h2>
