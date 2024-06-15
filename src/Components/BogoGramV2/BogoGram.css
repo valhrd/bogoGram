@@ -64,9 +64,31 @@ input, select, button {
     cursor: grab;
 }
 
-.player-letters .player-letter:active {
+.player-tilerack .player-letter:active {
     opacity: 0.7;
     border: 1px solid rgba(255, 255, 255, 0.438);
+}
+
+/* Letters to dump */
+.dump-rack {
+    border: 1px solid rgb(255, 255, 255);
+    height: 36px;
+    width: 36px;
+    margin-top: 20px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.dump-rack .dump-letter {
+    color: white;
+    border: 1px solid rgb(255, 255, 255);
+    width: 30px; /* Adjusted to fit a larger grid on the screen */
+    height: 30px; /* Adjusted to fit a larger grid on the screen */
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    margin: 2px;
+    cursor: grab;
 }
 
 button {
