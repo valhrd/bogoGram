@@ -52,6 +52,24 @@ function shuffleArray(array) {
   return array;
 }
 
+/**
+ * Determines the number of tiles per player
+ *
+ * @param {int} numPlayers – The number of players playing the game
+ * @return {int} number of Tiles per player
+ */
+function numTilesPerPlayer(numPlayers) {
+  if (2 <= numPlayers && numPlayers <= 4) {
+    return 21;
+  } else if (5 <= numPlayers && numPlayers <= 6) {
+    return 15;
+  } else if (7 <= numPlayers && numPlayers <= 8) {
+    return 11;
+  } else {
+    return 0;
+  }
+}
+
 exports.createGame = functions.https.onCall(async (data, content) => {
   if (!content.auth) {
     throw new functions.https.HttpsError("unauthenticated",
@@ -102,15 +120,29 @@ exports.distributeTiles = functions.https.onCall(async (data, context) => {
   const doc = await gameDataRef.get();
   /* const letters = "AABBCCE"; */
   const tiles = doc.data().tiles;
-  if (tiles.length < 7) {
-    throw new Error("Not enough tiles left.");
-  }
-  const tilesToPlayer = tiles.slice(0, 7);
+  const gameData = doc.data();
+  const playerIDs = gameData.playerID;
+  const numTiles = numTilesPerPlayer(playerIDs.length);
+  const tileDistributions = {};
+  let maxIndex = 0;
+  playerIDs.forEach((playerID, index) => {
+    const playerTiles = tiles.slice(index * numTiles, (index + 1) * numTiles);
+    tileDistributions[playerID] = playerTiles;
+    maxIndex = (index + 1) * numTiles;
+  });
+  const remainingTiles = tiles.slice(maxIndex);
+  await gameDataRef.update({
+    tileDistribution: tileDistributions,
+    tiles: remainingTiles,
+    tilesDistributed: true,
+  });
+  return {status: "Tiles distributed"};
+  /* const tilesToPlayer = tiles.slice(0, 7);
   const remainingTiles = tiles.slice(7);
 
   await gameDataRef.update({tiles: remainingTiles});
 
-  return {tiles: tilesToPlayer};
+  return {tiles: tilesToPlayer};*/
 });
 
 exports.peel = functions.https.onCall(async (data, context) => {

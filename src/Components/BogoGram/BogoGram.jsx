@@ -3,7 +3,7 @@ import { database } from './firebaseConfig'; // Adjust the path if necessary
 import { getFunctions, httpsCallable} from 'firebase/functions'; //line 3 
 import { initializeApp } from 'firebase/app'; 
 import { getAuth, signInWithPopup, GoogleAuthProvider, connectAuthEmulator, verifyPasswordResetCode } from 'firebase/auth';
-import { collection, getFirestore, query, orderBy, limit } from 'firebase/firestore';
+import { collection, getFirestore, query, orderBy, limit, doc, onSnapshot } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 import Trie from './Trie'; //new 11 Jun
@@ -22,8 +22,6 @@ const gridSize = 35;
 const initialGrid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(''));
 
 
-// Temporary testing
-// const letters = 'AAABBBCCCDDDDEEEEEEEEEEEEEEEEEEFFFGGGGHHHIIIIIIIIIIIIJJKKLLLLLMMMNNNNNNNNOOOOOOOOOOOPPPQQRRRRRRRRRSSSSSSTTTTTTTTTUUUUUUVVVWWWXXYYYZZ';
 const letters = 'HAPPYBOOMVISTA';
 let lettersArray;
 
@@ -215,8 +213,30 @@ function BogoGram() {
     setMustConnect(false);
   };
 
+  // Handle reading firestore docs for tile distribution
+  useEffect(() => {
+    if (!gameNumber || !user) return;
+
+    const gameRef = doc(firestore, 'gameData', gameNumber);
+    const unsubscribe = onSnapshot(gameRef, (docSnapshot) => {
+      if (!docSnapshot.exists) {
+        console.error("Document does not exist");
+        return;
+      }
+      const data = docSnapshot.data();
+      if (data.tileDistribution && data.tileDistribution[user.uid]) {
+        setPlayerLetters(data.tileDistribution[user.uid]);
+        setTilesDistributed(true);
+      }
+    }, error => {
+      console.error("Error listening to the game data:", error);
+    });
+
+    return () => unsubscribe();  // Cleanup subscription on component unmount
+}, [gameNumber, user, firestore]);
+
   // Distribute letters to players
-  const distributeLetters = () => {
+  /* const distributeLetters = () => {
     const functions = getFunctions(app);
     const distributeTiles = httpsCallable(functions, 'distributeTiles');
     distributeTiles({ gameID: gameNumber }).then((result) => {
@@ -226,7 +246,15 @@ function BogoGram() {
     }).catch(error => {
       console.error('Error distributing tiles:', error);
     });
+  }; */
+  const distributeLetters = () => {
+    const functions = getFunctions(app);
+    const distributeTiles = httpsCallable(functions, 'distributeTiles');
+    distributeTiles({ gameID: gameNumber }).catch(error => {
+      console.error('Error distributing tiles:', error);
+    });
   };
+  
 
   // Peel: provides a singular new letter to the player
   const peel = () => {
