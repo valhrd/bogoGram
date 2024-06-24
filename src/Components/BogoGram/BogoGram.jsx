@@ -3,7 +3,7 @@ import { database } from './firebaseConfig'; // Adjust the path if necessary
 import { getFunctions, httpsCallable} from 'firebase/functions'; //line 3 
 import { initializeApp } from 'firebase/app'; 
 import { getAuth, signInWithPopup, GoogleAuthProvider, connectAuthEmulator, verifyPasswordResetCode } from 'firebase/auth';
-import { collection, getFirestore, query, orderBy, limit, doc, onSnapshot } from 'firebase/firestore';
+import { collection, getFirestore, query, orderBy, limit, doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 import Trie from './Trie'; //new 11 Jun
@@ -219,21 +219,46 @@ function BogoGram() {
 
     const gameRef = doc(firestore, 'gameData', gameNumber);
     const unsubscribe = onSnapshot(gameRef, (docSnapshot) => {
-      if (!docSnapshot.exists) {
+      if (!docSnapshot.exists()) {
         console.error("Document does not exist");
         return;
       }
       const data = docSnapshot.data();
+      const updatesRef = doc(firestore, 'gameData', gameNumber);
       if (data.tileDistribution && data.tileDistribution[user.uid]) {
-        setPlayerLetters(data.tileDistribution[user.uid]);
-        setTilesDistributed(true);
+        if (!arraysEqual(data.tileDistribution[user.uid], playerLetters) && !tilesDistributed) {
+          setPlayerLetters(data.tileDistribution[user.uid]);
+          
+          updateDoc(updatesRef, {['tileDistribution.' + user.uid]: []});
+          setTilesDistributed(true);
+        }
+        
+        if (data.tileUpdates && data.tileUpdates[user.uid]) {
+          setPlayerLetters(prevLetters => [...prevLetters, ...data.tileUpdates[user.uid]]);
+          
+          updateDoc(updatesRef, {['tileUpdates.' + user.uid]: []});
+        }
+        if (!data.tilesInBag) {
+          setTilesInBag(false);
+          alert("No more tiles in the bag!");
+        }
+        
       }
     }, error => {
       console.error("Error listening to the game data:", error);
     });
 
     return () => unsubscribe();  // Cleanup subscription on component unmount
-}, [gameNumber, user, firestore]);
+  }, [gameNumber, user, firestore]);
+
+  // helper function for array equality, reduces numbger of updates
+  function arraysEqual(a,b) {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i< a.length; ++i) {
+      if (a[i] !== b[i]) return false;
+    }
+    return true;
+  }
 
   // Distribute letters to players
   /* const distributeLetters = () => {
@@ -257,7 +282,7 @@ function BogoGram() {
   
 
   // Peel: provides a singular new letter to the player
-  const peel = () => {
+  /* const peel = () => {
     const functions = getFunctions(app);
     const peel = httpsCallable(functions, 'peel');
     peel({gameID: gameNumber}).then((result) => {
@@ -272,7 +297,14 @@ function BogoGram() {
     }).catch(error => {
       console.error('Error distributing tiles:', error);
     });
-  }
+  } */
+  const peel = () => {
+    const functions = getFunctions(app);
+    const peel = httpsCallable(functions, 'peel');
+    peel({gameID: gameNumber}).catch(error => {
+      console.error('Error requesting more tiles:', error);
+    });
+}
 
 
 
@@ -444,6 +476,18 @@ function BogoGram() {
     handleDragStart(event, 'dump', letter, index);
   };
 
+  // this is to update the tiles in the firestore document when they are dropped, so that when peel is used, the original 21 tiles don't get fetched. Added 23 Jun. May not use
+  const updateTilesInFirestore = async (newPlayerLetters) => {
+    const gameRef = doc(firestore, 'gameData', gameNumber);
+    try{
+      await updateDoc(gameRef, {
+        ['tileDistribution.${user.uid}']: newPlayerLetters
+      });
+    } catch (error) {
+      console.error("Error updating player tiles in Firestore:", error);
+    }
+  };
+
   const handleDrop = (targetType, targetRow = null, targetCol = null) => (event) => {
     event.preventDefault();
   
@@ -493,6 +537,7 @@ function BogoGram() {
   
     setGrid(newGrid);
     setPlayerLetters(newPlayerLetters);
+    // updateTilesInFirestore(newPlayerLetters); //added 23 Jun
     setDumpRack(newDumpRack);
   
     Promise.all([

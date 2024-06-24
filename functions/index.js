@@ -86,6 +86,7 @@ exports.createGame = functions.https.onCall(async (data, content) => {
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     playerID: [content.auth.uid],
     tiles: shuffledLetters,
+    tilesInBag: true,
   });
   return {gameID: gameDataRef.id};
 });
@@ -124,6 +125,7 @@ exports.distributeTiles = functions.https.onCall(async (data, context) => {
   const playerIDs = gameData.playerID;
   const numTiles = numTilesPerPlayer(playerIDs.length);
   const tileDistributions = {};
+  const tileUpdates = {};
   let maxIndex = 0;
   playerIDs.forEach((playerID, index) => {
     const playerTiles = tiles.slice(index * numTiles, (index + 1) * numTiles);
@@ -135,6 +137,7 @@ exports.distributeTiles = functions.https.onCall(async (data, context) => {
     tileDistribution: tileDistributions,
     tiles: remainingTiles,
     tilesDistributed: true,
+    tileUpdates: tileUpdates,
   });
   return {status: "Tiles distributed"};
   /* const tilesToPlayer = tiles.slice(0, 7);
@@ -158,7 +161,28 @@ exports.peel = functions.https.onCall(async (data, context) => {
   if (!doc.exists) {
     throw new Error("Game not found.");
   }
-  const serverTiles = doc.data().tiles;
+  const gameData = doc.data();
+  const serverTiles = gameData.tiles;
+  const playerIDs = gameData.playerID;
+  if (serverTiles.length < playerIDs.length) {
+    await gameDataRef.update({tilesInBag: false});
+    return;
+  }
+  const tileUpdates = gameData.tileUpdates || {};
+  playerIDs.forEach((playerID) => {
+    const tile = serverTiles.shift(); // Remove the first tile for each player
+    if (!tileUpdates[playerID]) {
+      tileUpdates[playerID] = [];
+    }
+    tileUpdates[playerID].push(tile);
+  });
+  await gameDataRef.update({
+    tiles: serverTiles,
+    tileUpdates: tileUpdates,
+  });
+  return {status: "Tiles distributed"};
+});
+/*
   let tilesToPlayer;
   if (serverTiles.length === 0) {
     tilesToPlayer = "*";
@@ -170,7 +194,8 @@ exports.peel = functions.https.onCall(async (data, context) => {
   }
   // Return the tile
   return {tile: tilesToPlayer};
-});
+
+}); */
 
 exports.dumpTile = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
