@@ -550,24 +550,39 @@ function BogoGram() {
     .catch(error => console.error('Error updating the database:', error));
   };
 
+  // Just for convenience to make the game title
+  const gameTitle = ['B','O','G','O','G','R','A','M'];
+
   if (!user) {
     return (
-      <div className="App">
-        <h1 className="game-title">B O G O G R A M</h1>
-        <button onClick={signIn}>Sign In</button>
+      <div className="Login">
+        <h1 className="login-title">
+          {gameTitle.map((letter) => (
+            <span className="login-title-tile">
+              <span>{letter}</span>
+            </span>
+          ))}
+        </h1>
+        <button id="button" className="sign-in" onClick={signIn}>Sign In</button>
       </div>
     );
   }
 
   return (
-    <div className="App">
-      <h1 className="game-title">B O G O G R A M</h1>
+    <div className="Game">
+      <h1 className="game-title">
+        {gameTitle.map((letter) => (
+          <span className="game-title-tile">
+            <span>{letter}</span>
+          </span>
+        ))}
+      </h1>
       {/* Conditional rendering to show the sign-out button only when the user is signed in */}
       {user && (
-        <button onClick={signOut}>Sign Out</button>
+        <button id="button" onClick={signOut}>Sign Out</button>
       )}
       <div>
-        <button onClick={startGame}>Start game</button>
+        <button id="button" onClick={startGame}>Start game</button>
         <div>
         <input
           type="text"
@@ -575,13 +590,13 @@ function BogoGram() {
           onChange={(e) => setInputGameId(e.target.value)}
           placeholder="Enter Game ID"
         />
-        <button onClick={handleJoinGame}>Join Game</button>
+        <button id="button" onClick={handleJoinGame}>Join Game</button>
       </div>
-        <button onClick={() => distributeLetters()} disabled={tilesDistributed}>Distribute</button>
+        <button id="button" onClick={() => distributeLetters()} disabled={tilesDistributed}>Distribute</button>
         <p className="game-name-display">{gameName ? `Current Game: ${gameName}` : "No game started"}</p>
-        <button onClick={shuffleLetters}>Shuffle</button>
-        <button onClick={rebuildGrid}>Rebuild</button>
-        <button onClick={peel} disabled={!(tilesDistributed && !playerLetters.length) || !tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}>PEEL</button>
+        <button id="button" onClick={shuffleLetters}>Shuffle</button>
+        <button id="button" onClick={rebuildGrid}>Rebuild</button>
+        <button id="button" onClick={peel} disabled={!(tilesDistributed && !playerLetters.length) || !tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}>PEEL</button>
       </div>
       <div>
         <h2 className="player-letters">Player Letters</h2>
@@ -629,10 +644,10 @@ function BogoGram() {
             ))}
           </div>
         </div> 
-        <button onClick={dump} disabled={dumpRack.length !== 1} className="dump-button">DUMP!</button>
+        <button id="button" onClick={dump} disabled={dumpRack.length !== 1} className="dump-button">DUMP!</button>
       </div>
       <div>
-        <button onClick={handleCheckWords} disabled={!(tilesDistributed && !playerLetters.length) /*|| tilesInBag*/}>
+        <button id="button" onClick={handleCheckWords} disabled={!(tilesDistributed && !playerLetters.length) /*|| tilesInBag*/}>
           Check Words
         </button> 
         {validationMessage && <p className="check-words-display">{validationMessage}</p>}
@@ -641,18 +656,23 @@ function BogoGram() {
         {grid.map((row, rowIndex) => (
           <div key={rowIndex} className="row">
             {row.map((cell, colIndex) => (
-              <Tile
-                letter={cell}
-                key={colIndex}
-                className={`cell ${startRow === rowIndex && startCol === colIndex ? 'selected' : ''}`}
-                onClick={() => handleCellClick(rowIndex, colIndex)}
+              <div
+                className="cell"
 
-                // Testing drag and drop functionality
+                // Shifted drag and drop from Tile to div
                 onDragOver={handleDragOver}
                 onDrop={handleDrop('board', rowIndex, colIndex)}
+              >
+                <Tile
+                  letter={cell}
+                  key={colIndex}
+                  className={`${cell ? 'board-tile' : ''} ${startRow === rowIndex && startCol === colIndex ? 'selected' : ''}`}
+                  onClick={() => handleCellClick(rowIndex, colIndex)}
 
-                onDragStart={(event) => handleCellDragStart(event, cell, rowIndex, colIndex)}
-              />
+                  // Testing drag and drop functionality
+                  onDragStart={(event) => handleCellDragStart(event, cell, rowIndex, colIndex)}
+                />
+              </div>
             ))}
           </div>
         ))}

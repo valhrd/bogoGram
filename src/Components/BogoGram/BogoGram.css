@@ -1,3 +1,80 @@
+/*  Login screen CSS */
+.Login {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+    text-align: center; 
+    background: linear-gradient(to bottom, rgba(10,106,0,1) 10%, rgba(26,157,0,1) 39%, rgba(56,255,0,1) 100%);
+    user-select: none;
+}
+
+.login-title {
+    display: flex;
+}
+
+.login-title-tile {
+    color: black;
+    font-family: 'Fredoka One', sans-serif;
+    font-size: 96px;
+
+    /* Tile borders */
+    width: 120px;
+    height: 110px;
+    margin: 5px;
+    border-radius: 10px;
+    background: linear-gradient(to bottom, rgb(240, 255, 172) 50%, rgb(80, 250, 95) 120px);
+    box-shadow: 0 10px #bcc56b;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-title-tile span {
+    /* Compresses letters vertically */
+    transform: scale(1,  calc(110 / 120));
+}
+
+
+
+/* Main game CSS */
+.Game {
+    text-align: center;
+
+    user-select: none;
+}
+
+.game-title {
+    display: flex;
+    justify-content: center;
+}
+
+.game-title-tile {
+    color: black;
+    font-family: 'Fredoka One', sans-serif;
+    font-size: 48px;
+
+    /* Tile borders */
+    width: 60px;
+    height: 55px;
+    margin: 2px;
+    border-radius: 5px;
+    background: linear-gradient(to bottom, rgb(240, 255, 172) 50%, rgb(80, 250, 95) 120px);
+    box-shadow: 0 5px #bcc56b;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.game-title-tile span {
+    /* Compresses letters vertically */
+    transform: scale(1,  calc(110 / 120));
+}
+
+
 .BogoGram {
     font-family: 'Montserrat', sans-serif;
     text-align: center;
@@ -5,34 +82,109 @@
 
 .game-title {
     color: white;
+    font-family: 'Fredoka One', sans-serif;
+    font-size: 36px;
 }
 
+
+
+/* CSS for buttons in general */
+#button {
+    background-color: rgb(240, 255, 172);
+    color: rgb(0, 0, 0);
+    font-weight: bold;
+    font-family: 'Fredoka One', sans-serif;
+    font-size: 16px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    width: 200px;
+    box-shadow: 0 7px #bcc56b;
+    cursor: pointer;
+    transition: all 0.3s ease 0s;
+}
+
+#button:hover {
+    background-color: #47ff56; /* A lighter green on hover */
+    box-shadow: 0 7px #22c24a; /* Deeper shadow for 3D effect on hover */
+    transform: translateY(0px); /* Slight raise effect on hover */
+}
+
+#button:active {
+    background-color: #47ff56; /* Even darker green when the button is clicked */
+    box-shadow: 0 2px #22c24a; /* Flatter shadow when active */
+    transform: translateY(7px); /* Pushed effect when clicked */
+}
+
+#button:focus {
+    background-color: rgb(240, 255, 172);
+}
+
+#button:disabled {
+    background-color: rgb(173, 173, 173);
+    box-shadow: 0 7px #505050; /* Flatter shadow when active */
+}
+
+#button:active:disabled {
+    transform: none; /* Pushed effect when clicked */
+}
+
+.game-name-display {
+    user-select: text;
+}
+
+/* Edited grid CSS */
 .grid {
     display: inline-block;
     margin: 20px;
+    border: 1px solid rgb(255, 255, 255);
 }
 
 .row {
     display: flex;
 }
 
+
+/* Board tiles CSS */
 .cell {
-    width: 30px; /* Adjusted to fit a larger grid on the screen */
-    height: 30px; /* Adjusted to fit a larger grid on the screen */
+    width: 42px; /* Adjusted to fit a larger grid on the screen */
+    height: 42px; /* Adjusted to fit a larger grid on the screen */
     border: 1px solid rgb(255, 255, 255);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    background-color: rgba(255, 255, 255, 0);
+    background-color: rgba(229, 255, 0, 0);
     color: rgb(255, 255, 255); /* Ensure letters are black on white background */
+
+    padding-bottom: 3px;
+    box-sizing: border-box;
 
     /* Disable highlighting letter */
     user-select: none;
+    cursor: default;
 }
 
-.cell.selected {
-    background-color: #ddd;
+.board-tile {
+    color: black;
+    font-family: 'Fredoka One', sans-serif;
+    font-size: 18px;
+
+    width: 36px;
+    height: 33px;
+    margin-top: -5px;
+    margin: 5px;
+    border-radius: 3px;
+    background: linear-gradient(to bottom, rgb(240, 255, 172) 50%, rgb(80, 250, 95) 120px);
+    box-shadow: 0 3px #bcc56b;
+
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    margin: 2px;
+    cursor: grab;
+
+    line-height: 1;
 }
 
 input, select, button {
@@ -44,19 +196,30 @@ input, select, button {
 }
 
 .player-tilerack {
-    border: 1px solid rgb(255, 255, 255);
-    height: 36px;
+    border: 2px solid rgb(255, 255, 255);
+    height: 42px;
     min-width: 300px;
     max-width: fit-content;
     margin-left: auto;
     margin-right: auto;
 }
 
+
+/* Please figure tile id/class out */
+
+/* Player tiles CSS */
 .player-tilerack .player-letter {
-    color: white;
-    border: 1px solid rgb(255, 255, 255);
-    width: 30px; /* Adjusted to fit a larger grid on the screen */
-    height: 30px; /* Adjusted to fit a larger grid on the screen */
+    color: black;
+    font-family: 'Fredoka One', sans-serif;
+    font-size: 18px;
+
+    width: 36px;
+    height: 33px;
+    margin: 5px;
+    border-radius: 3px;
+    background: linear-gradient(to bottom, rgb(240, 255, 172) 50%, rgb(80, 250, 95) 120px);
+    box-shadow: 0 5px #bcc56b;
+
     display: inline-flex;
     justify-content: center;
     align-items: center;
@@ -71,19 +234,26 @@ input, select, button {
 
 /* Letters to dump */
 .dump-rack {
-    border: 1px solid rgb(255, 255, 255);
-    height: 36px;
-    width: 36px;
+    border: 2px solid rgb(255, 255, 255);
+    height: 42px;
+    width: 42px;
     margin-top: 20px;
     margin-left: auto;
     margin-right: auto;
 }
 
 .dump-rack .dump-letter {
-    color: white;
-    border: 1px solid rgb(255, 255, 255);
-    width: 30px; /* Adjusted to fit a larger grid on the screen */
-    height: 30px; /* Adjusted to fit a larger grid on the screen */
+    color: black;
+    font-family: 'Fredoka One', sans-serif;
+    font-size: 18px;
+
+    width: 36px;
+    height: 33px;
+    margin: 5px;
+    border-radius: 3px;
+    background: linear-gradient(to bottom, rgb(240, 255, 172) 50%, rgb(80, 250, 95) 120px);
+    box-shadow: 0 5px #bcc56b;
+
     display: inline-flex;
     justify-content: center;
     align-items: center;

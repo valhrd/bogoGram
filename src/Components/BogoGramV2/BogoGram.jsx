@@ -3,7 +3,7 @@ import { database } from './firebaseConfig'; // Adjust the path if necessary
 import { getFunctions, httpsCallable} from 'firebase/functions'; //line 3 
 import { initializeApp } from 'firebase/app'; 
 import { getAuth, signInWithPopup, GoogleAuthProvider, connectAuthEmulator, verifyPasswordResetCode } from 'firebase/auth';
-import { collection, getFirestore, query, orderBy, limit } from 'firebase/firestore';
+import { collection, getFirestore, query, orderBy, limit, doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 import Trie from './Trie'; //new 11 Jun
@@ -22,8 +22,6 @@ const gridSize = 35;
 const initialGrid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(''));
 
 
-// Temporary testing
-// const letters = 'AAABBBCCCDDDDEEEEEEEEEEEEEEEEEEFFFGGGGHHHIIIIIIIIIIIIJJKKLLLLLMMMNNNNNNNNOOOOOOOOOOOPPPQQRRRRRRRRRSSSSSSTTTTTTTTTUUUUUUVVVWWWXXYYYZZ';
 const letters = 'HAPPYBOOMVISTA';
 let lettersArray;
 
@@ -215,8 +213,55 @@ function BogoGram() {
     setMustConnect(false);
   };
 
+  // Handle reading firestore docs for tile distribution
+  useEffect(() => {
+    if (!gameNumber || !user) return;
+
+    const gameRef = doc(firestore, 'gameData', gameNumber);
+    const unsubscribe = onSnapshot(gameRef, (docSnapshot) => {
+      if (!docSnapshot.exists()) {
+        console.error("Document does not exist");
+        return;
+      }
+      const data = docSnapshot.data();
+      const updatesRef = doc(firestore, 'gameData', gameNumber);
+      if (data.tileDistribution && data.tileDistribution[user.uid]) {
+        if (!arraysEqual(data.tileDistribution[user.uid], playerLetters) && !tilesDistributed) {
+          setPlayerLetters(data.tileDistribution[user.uid]);
+          
+          updateDoc(updatesRef, {['tileDistribution.' + user.uid]: []});
+          setTilesDistributed(true);
+        }
+        
+        if (data.tileUpdates && data.tileUpdates[user.uid]) {
+          setPlayerLetters(prevLetters => [...prevLetters, ...data.tileUpdates[user.uid]]);
+          
+          updateDoc(updatesRef, {['tileUpdates.' + user.uid]: []});
+        }
+        if (!data.tilesInBag) {
+          setTilesInBag(false);
+          alert("No more tiles in the bag!");
+        }
+        
+      }
+    }, error => {
+      console.error("Error listening to the game data:", error);
+    });
+
+    return () => unsubscribe();  // Cleanup subscription on component unmount
+  }, [gameNumber, user, firestore]);
+
+  // helper function for array equality, reduces numbger of updates
+  function arraysEqual(a,b) {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i< a.length; ++i) {
+      if (a[i] !== b[i]) return false;
+    }
+    return true;
+  }
+
   // Distribute letters to players
-  const distributeLetters = () => {
+  /* const distributeLetters = () => {
     const functions = getFunctions(app);
     const distributeTiles = httpsCallable(functions, 'distributeTiles');
     distributeTiles({ gameID: gameNumber }).then((result) => {
@@ -226,10 +271,18 @@ function BogoGram() {
     }).catch(error => {
       console.error('Error distributing tiles:', error);
     });
+  }; */
+  const distributeLetters = () => {
+    const functions = getFunctions(app);
+    const distributeTiles = httpsCallable(functions, 'distributeTiles');
+    distributeTiles({ gameID: gameNumber }).catch(error => {
+      console.error('Error distributing tiles:', error);
+    });
   };
+  
 
   // Peel: provides a singular new letter to the player
-  const peel = () => {
+  /* const peel = () => {
     const functions = getFunctions(app);
     const peel = httpsCallable(functions, 'peel');
     peel({gameID: gameNumber}).then((result) => {
@@ -244,7 +297,14 @@ function BogoGram() {
     }).catch(error => {
       console.error('Error distributing tiles:', error);
     });
-  }
+  } */
+  const peel = () => {
+    const functions = getFunctions(app);
+    const peel = httpsCallable(functions, 'peel');
+    peel({gameID: gameNumber}).catch(error => {
+      console.error('Error requesting more tiles:', error);
+    });
+}
 
 
 
@@ -416,6 +476,18 @@ function BogoGram() {
     handleDragStart(event, 'dump', letter, index);
   };
 
+  // this is to update the tiles in the firestore document when they are dropped, so that when peel is used, the original 21 tiles don't get fetched. Added 23 Jun. May not use
+  const updateTilesInFirestore = async (newPlayerLetters) => {
+    const gameRef = doc(firestore, 'gameData', gameNumber);
+    try{
+      await updateDoc(gameRef, {
+        ['tileDistribution.${user.uid}']: newPlayerLetters
+      });
+    } catch (error) {
+      console.error("Error updating player tiles in Firestore:", error);
+    }
+  };
+
   const handleDrop = (targetType, targetRow = null, targetCol = null) => (event) => {
     event.preventDefault();
   
@@ -465,6 +537,7 @@ function BogoGram() {
   
     setGrid(newGrid);
     setPlayerLetters(newPlayerLetters);
+    // updateTilesInFirestore(newPlayerLetters); //added 23 Jun
     setDumpRack(newDumpRack);
   
     Promise.all([
@@ -477,24 +550,39 @@ function BogoGram() {
     .catch(error => console.error('Error updating the database:', error));
   };
 
+  // Just for convenience to make the game title
+  const gameTitle = ['B','O','G','O','G','R','A','M'];
+
   if (!user) {
     return (
-      <div className="App">
-        <h1 className="game-title">B O G O G R A M</h1>
-        <button onClick={signIn}>Sign In</button>
+      <div className="Login">
+        <h1 className="login-title">
+          {gameTitle.map((letter) => (
+            <span className="login-title-tile">
+              <span>{letter}</span>
+            </span>
+          ))}
+        </h1>
+        <button id="button" className="sign-in" onClick={signIn}>Sign In</button>
       </div>
     );
   }
 
   return (
-    <div className="App">
-      <h1 className="game-title">B O G O G R A M</h1>
+    <div className="Game">
+      <h1 className="game-title">
+        {gameTitle.map((letter) => (
+          <span className="game-title-tile">
+            <span>{letter}</span>
+          </span>
+        ))}
+      </h1>
       {/* Conditional rendering to show the sign-out button only when the user is signed in */}
       {user && (
-        <button onClick={signOut}>Sign Out</button>
+        <button id="button" onClick={signOut}>Sign Out</button>
       )}
       <div>
-        <button onClick={startGame}>Start game</button>
+        <button id="button" onClick={startGame}>Start game</button>
         <div>
         <input
           type="text"
@@ -502,13 +590,13 @@ function BogoGram() {
           onChange={(e) => setInputGameId(e.target.value)}
           placeholder="Enter Game ID"
         />
-        <button onClick={handleJoinGame}>Join Game</button>
+        <button id="button" onClick={handleJoinGame}>Join Game</button>
       </div>
-        <button onClick={() => distributeLetters()} disabled={tilesDistributed}>Distribute</button>
+        <button id="button" onClick={() => distributeLetters()} disabled={tilesDistributed}>Distribute</button>
         <p className="game-name-display">{gameName ? `Current Game: ${gameName}` : "No game started"}</p>
-        <button onClick={shuffleLetters}>Shuffle</button>
-        <button onClick={rebuildGrid}>Rebuild</button>
-        <button onClick={peel} disabled={!(tilesDistributed && !playerLetters.length) || !tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}>PEEL</button>
+        <button id="button" onClick={shuffleLetters}>Shuffle</button>
+        <button id="button" onClick={rebuildGrid}>Rebuild</button>
+        <button id="button" onClick={peel} disabled={!(tilesDistributed && !playerLetters.length) || !tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}>PEEL</button>
       </div>
       <div>
         <h2 className="player-letters">Player Letters</h2>
@@ -556,10 +644,10 @@ function BogoGram() {
             ))}
           </div>
         </div> 
-        <button onClick={dump} disabled={dumpRack.length !== 1} className="dump-button">DUMP!</button>
+        <button id="button" onClick={dump} disabled={dumpRack.length !== 1} className="dump-button">DUMP!</button>
       </div>
       <div>
-        <button onClick={handleCheckWords} disabled={!(tilesDistributed && !playerLetters.length) /*|| tilesInBag*/}>
+        <button id="button" onClick={handleCheckWords} disabled={!(tilesDistributed && !playerLetters.length) /*|| tilesInBag*/}>
           Check Words
         </button> 
         {validationMessage && <p className="check-words-display">{validationMessage}</p>}
@@ -568,18 +656,23 @@ function BogoGram() {
         {grid.map((row, rowIndex) => (
           <div key={rowIndex} className="row">
             {row.map((cell, colIndex) => (
-              <Tile
-                letter={cell}
-                key={colIndex}
-                className={`cell ${startRow === rowIndex && startCol === colIndex ? 'selected' : ''}`}
-                onClick={() => handleCellClick(rowIndex, colIndex)}
+              <div
+                className="cell"
 
-                // Testing drag and drop functionality
+                // Shifted drag and drop from Tile to div
                 onDragOver={handleDragOver}
                 onDrop={handleDrop('board', rowIndex, colIndex)}
+              >
+                <Tile
+                  letter={cell}
+                  key={colIndex}
+                  className={`${cell ? 'board-tile' : ''} ${startRow === rowIndex && startCol === colIndex ? 'selected' : ''}`}
+                  onClick={() => handleCellClick(rowIndex, colIndex)}
 
-                onDragStart={(event) => handleCellDragStart(event, cell, rowIndex, colIndex)}
-              />
+                  // Testing drag and drop functionality
+                  onDragStart={(event) => handleCellDragStart(event, cell, rowIndex, colIndex)}
+                />
+              </div>
             ))}
           </div>
         ))}
