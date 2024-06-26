@@ -59,7 +59,7 @@ function shuffleArray(array) {
  * @return {int} number of Tiles per player
  */
 function numTilesPerPlayer(numPlayers) {
-  if (2 <= numPlayers && numPlayers <= 4) {
+  if (1 <= numPlayers && numPlayers <= 4) {
     return 21;
   } else if (5 <= numPlayers && numPlayers <= 6) {
     return 15;
@@ -87,6 +87,8 @@ exports.createGame = functions.https.onCall(async (data, content) => {
     playerID: [content.auth.uid],
     tiles: shuffledLetters,
     tilesInBag: true,
+    gameOver: false,
+    gameWinner: "",
   });
   return {gameID: gameDataRef.id};
 });
@@ -164,23 +166,27 @@ exports.peel = functions.https.onCall(async (data, context) => {
   const gameData = doc.data();
   const serverTiles = gameData.tiles;
   const playerIDs = gameData.playerID;
-  if (serverTiles.length < playerIDs.length) {
-    await gameDataRef.update({tilesInBag: false});
-    return;
-  }
+  const bagTiles = serverTiles.length >= playerIDs.length;
   const tileUpdates = gameData.tileUpdates || {};
-  playerIDs.forEach((playerID) => {
-    const tile = serverTiles.shift(); // Remove the first tile for each player
-    if (!tileUpdates[playerID]) {
-      tileUpdates[playerID] = [];
-    }
-    tileUpdates[playerID].push(tile);
-  });
+  if (bagTiles) {
+    playerIDs.forEach((playerID) => {
+      const tile = serverTiles.shift(); // Remove the first tile for each player
+      if (!tileUpdates[playerID]) {
+        tileUpdates[playerID] = [];
+      }
+      tileUpdates[playerID].push(tile);
+    });
+  }
   await gameDataRef.update({
     tiles: serverTiles,
     tileUpdates: tileUpdates,
+    tilesInBag: bagTiles,
   });
-  return {status: "Tiles distributed"};
+  if (bagTiles) {
+    return {status: "Tiles distributed"};
+  } else {
+    return {status: "Bag is empty!"};
+  }
 });
 /*
   let tilesToPlayer;
@@ -222,9 +228,18 @@ exports.dumpTile = functions.https.onCall(async (data, context) => {
     ...serverTiles.slice(0, randomIndex), data.tile,
     ...serverTiles.slice(randomIndex),
   ];
+  const playerIDs = doc.data.playerID;
+  const bagTiles = serverTiles.length >= playerIDs.length;
+  if (serverTiles.length < 3) { // if < 3 tiles in the bag, return all
+    await gameDataRef.update({
+      tilesInBag: false,
+    });
+    return {tiles: serverTiles};
+  }
   const tilesToPlayer = serverTiles.slice(0, 3);
   await gameDataRef.update({
     tiles: serverTiles.slice(3),
+    tilesInBag: bagTiles,
   });
 
   return {tiles: tilesToPlayer};
