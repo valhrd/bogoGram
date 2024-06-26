@@ -497,10 +497,14 @@ function BogoGram() {
     const newGrid = grid.map(row => row.slice());
     const newPlayerLetters = [...playerLetters];
     const newDumpRack = [...dumpRack];
+
+    let sourceRow, sourceCol;
   
     if (source === 'board') {
-      const sourceRow = event.dataTransfer.getData("row");
-      const sourceCol = event.dataTransfer.getData("col");
+
+      // Changes made such that tiles are swapped on board instead of one tile being sent back to player rack
+      sourceRow = event.dataTransfer.getData("row");
+      sourceCol = event.dataTransfer.getData("col");
       newGrid[sourceRow][sourceCol] = '';
 
       // Tiles played changes
@@ -515,7 +519,13 @@ function BogoGram() {
   
     if (targetType === 'board') {
       if (newGrid[targetRow][targetCol]) {
-        newPlayerLetters.push(newGrid[targetRow][targetCol]);
+
+        // newPlayerLetters.push(newGrid[targetRow][targetCol]);
+
+        // Check if variables sourceRow and sourceCol are falsy
+        if (sourceRow && sourceCol) {
+          newGrid[sourceRow][sourceCol] = newGrid[targetRow][targetCol];
+        }
         
         // Tiles played changes
         tPlayed.removeTile(targetRow, targetCol);
