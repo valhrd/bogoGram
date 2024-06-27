@@ -3,7 +3,7 @@ import { database } from './firebaseConfig'; // Adjust the path if necessary
 import { getFunctions, httpsCallable} from 'firebase/functions'; //line 3 
 import { initializeApp } from 'firebase/app'; 
 import { getAuth, signInWithPopup, GoogleAuthProvider, connectAuthEmulator, verifyPasswordResetCode } from 'firebase/auth';
-import { collection, getFirestore, query, orderBy, limit, doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { collection, getFirestore, query, orderBy, limit, doc, onSnapshot, updateDoc, getDoc } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
 import Trie from './Trie'; //new 11 Jun
@@ -97,6 +97,14 @@ function BogoGram() {
   // Dump rack
   const [dumpRack, setDumpRack] = useState([]);
 
+  // Word validity 
+  const [allValid, setAllValid] = useState(false);
+
+  // game over management
+  const [gameOver, setGameOver] = useState(false);
+  const [gameWinner, setGameWinner] = useState('');
+
+
   
   const [user] = useAuthState(auth); 
   const signIn = async () => { 
@@ -168,6 +176,7 @@ function BogoGram() {
       console.log('New Game Created with ID: ', result.data.gameID);
       setGameNumber(result.data.gameID);
       setGameName("Game " + result.data.gameID); // for debugging purposes
+      setAllValid(false);
     }).catch(error => {
       console.error('Error in creating new game', error);
     });
@@ -189,6 +198,7 @@ function BogoGram() {
       setGameName("Game " + res); // for debugging purposes
       alert("Successfully joined the game!");
       setInputGameId(''); // Clear the input field
+      setAllValid(false);
     }).catch(error => {
       console.error('Error joining game:', error);
       alert("Failed to join game: " + error.message);
@@ -240,10 +250,15 @@ function BogoGram() {
         }
         if (!data.tilesInBag) {
           setTilesInBag(false);
-          alert("No more tiles in the bag!");
+          
         }
-        
+        if (data.gameOver) {
+          setGameOver(true);
+          setGameWinner(data.gameWinner);
+          alert(data.gameWinner === user.uid ? "By some lottery, you have won the game!" : "Game over! Boo hoo.");
+        }
       }
+
     }, error => {
       console.error("Error listening to the game data:", error);
     });
@@ -299,6 +314,10 @@ function BogoGram() {
     });
   } */
   const peel = () => {
+    if (!tilesInBag) {
+      alert("Not enough tiles in the bag!");
+      return
+    }
     const functions = getFunctions(app);
     const peel = httpsCallable(functions, 'peel');
     peel({gameID: gameNumber}).catch(error => {
@@ -311,6 +330,10 @@ function BogoGram() {
   // Dump: allows a player to return 1 letter to the bag and get back 3 randomly drawn ones
   // TODO: Please redo this for drag and drop functionality
   const dump = () => {
+    if (!tilesInBag) {
+      alert("Not enough tiles in the bag!");
+      return
+    }
     if (dumpRack.length !== 1) {
         alert("Please enter exactly one letter to dump.");
         return;
@@ -408,18 +431,47 @@ function BogoGram() {
   const handleCheckWords = () => {
     if (!tPlayed.areAllTilesConnected()) {
       setValidationMessage("You have unconnected tiles!");
+      setAllValid(false);
       return;
     }
     if (dictionary && checkWordsInGrid(grid, dictionary)) {
       console.log('All words valid');
       setValidationMessage("All words are valid!");
+      setAllValid(true);
     } else {
       console.log('Invalid word(s) found');
       setValidationMessage("You have invalid words!");
+      setAllValid(true);
     }
   };
 
-
+  const handleBananas = async () => {
+    handleCheckWords(); // This sets `allValidWords`
+  
+    if (!gameNumber || !user) return;
+    const gameRef = doc(firestore, 'gameData', gameNumber);
+  
+    if (allValid) {
+      // Current player wins
+      console.log("You win!")
+      await updateDoc(gameRef, {
+        gameOver: true,
+        gameWinner: user.uid
+      });
+    } else {
+      // Randomly choose a winner among the players
+      console.log("You have invalid letters, somebody else will win :(");
+      const docSnapshot = await getDoc(gameRef);
+      const data = docSnapshot.data();
+      const randomWinner = data.playerID[Math.floor(Math.random() * data.playerID.length)];
+      console.log("Instead, the winner shall be: " + randomWinner);
+      await updateDoc(gameRef, {
+        gameOver: true,
+        gameWinner: randomWinner
+      });
+    }
+  };
+  
 
   // Shuffle player rack
   const shuffleLetters = () => {
@@ -517,17 +569,17 @@ function BogoGram() {
       newDumpRack.pop();
     }
   
+    // Fixed logic for drag and drop
     if (targetType === 'board') {
       if (newGrid[targetRow][targetCol]) {
-
-        // newPlayerLetters.push(newGrid[targetRow][targetCol]);
 
         // Check if variables sourceRow and sourceCol are falsy
         if (sourceRow && sourceCol) {
           newGrid[sourceRow][sourceCol] = newGrid[targetRow][targetCol];
+          tPlayed.addTile(sourceRow, sourceCol)
+        } else {
+          newPlayerLetters.push(newGrid[targetRow][targetCol]);
         }
-        
-        // Tiles played changes
         tPlayed.removeTile(targetRow, targetCol);
       }
       newGrid[targetRow][targetCol] = letter;
@@ -657,8 +709,8 @@ function BogoGram() {
         <button id="button" onClick={dump} disabled={dumpRack.length !== 1} className="dump-button">DUMP!</button>
       </div>
       <div>
-        <button id="button" onClick={handleCheckWords} disabled={!(tilesDistributed && !playerLetters.length) /*|| tilesInBag*/}>
-          Check Words
+        <button id="button" onClick={handleBananas} disabled={!(tilesDistributed && !playerLetters.length) || tilesInBag}>
+          BANANAS!
         </button> 
         {validationMessage && <p className="check-words-display">{validationMessage}</p>}
       </div>

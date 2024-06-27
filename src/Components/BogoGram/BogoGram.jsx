@@ -569,17 +569,17 @@ function BogoGram() {
       newDumpRack.pop();
     }
   
+    // Fixed logic for drag and drop
     if (targetType === 'board') {
       if (newGrid[targetRow][targetCol]) {
-
-        // newPlayerLetters.push(newGrid[targetRow][targetCol]);
 
         // Check if variables sourceRow and sourceCol are falsy
         if (sourceRow && sourceCol) {
           newGrid[sourceRow][sourceCol] = newGrid[targetRow][targetCol];
+          tPlayed.addTile(sourceRow, sourceCol)
+        } else {
+          newPlayerLetters.push(newGrid[targetRow][targetCol]);
         }
-        
-        // Tiles played changes
         tPlayed.removeTile(targetRow, targetCol);
       }
       newGrid[targetRow][targetCol] = letter;
