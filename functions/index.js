@@ -76,10 +76,12 @@ exports.createGame = functions.https.onCall(async (data, content) => {
         "call the function when authenticated  ");
   }
   const gameID = generateGameId();
-  const letters = "AAABBBCCCDDDDEEEEEEEEEEEEEEEEEE" +
+  /* const letters = "AAABBBCCCDDDDEEEEEEEEEEEEEEEEEE" +
                   "FFFGGGGHHHIIIIIIIIIIIIJJKKLLLLLMMM" +
                   "NNNNNNNNOOOOOOOOOOOPPPQQRRRRRRRRR" +
-                  "SSSSSSTTTTTTTTTUUUUUUVVVWWWXXYYYZZ";
+                  "SSSSSSTTTTTTTTTUUUUUUVVVWWWXXYYYZZ";*/
+  const letters = "AABBCCDDEEEEFFGGHHIIIIIIIIJJKKLLLLMM" +
+                  "NNOOOOPPSSSSTTTT";
   const shuffledLetters = shuffleArray(letters.split(""));
   const gameDataRef = firestore.collection("gameData").doc(gameID);
   await gameDataRef.set( {
@@ -216,26 +218,20 @@ exports.dumpTile = functions.https.onCall(async (data, context) => {
   }
 
   let serverTiles = doc.data().tiles;
+  const playerIDs = doc.data().playerID;
   // Handle the case where there are fewer than 3 tiles left
-  if (serverTiles.length < 3) {
-    await gameDataRef.update({
-      tiles: admin.firestore.FieldValue.arrayRemove(...serverTiles),
-    });
-    return {tiles: serverTiles.concat(Array(3 - serverTiles.length).fill("*"))};
-  }
-  const randomIndex = Math.floor(Math.random() * serverTiles.length);
-  serverTiles = [
-    ...serverTiles.slice(0, randomIndex), data.tile,
-    ...serverTiles.slice(randomIndex),
-  ];
-  const playerIDs = doc.data.playerID;
-  const bagTiles = serverTiles.length >= playerIDs.length;
   if (serverTiles.length < 3) { // if < 3 tiles in the bag, return all
     await gameDataRef.update({
       tilesInBag: false,
     });
     return {tiles: serverTiles};
   }
+  const randomIndex = Math.floor(Math.random() * serverTiles.length);
+  serverTiles = [
+    ...serverTiles.slice(0, randomIndex), data.tile,
+    ...serverTiles.slice(randomIndex),
+  ];
+  const bagTiles = (serverTiles.length - 3) >= playerIDs.length;
   const tilesToPlayer = serverTiles.slice(0, 3);
   await gameDataRef.update({
     tiles: serverTiles.slice(3),

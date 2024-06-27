@@ -250,7 +250,7 @@ function BogoGram() {
         }
         if (!data.tilesInBag) {
           setTilesInBag(false);
-          alert("Not enough tiles in the bag!");
+          
         }
         if (data.gameOver) {
           setGameOver(true);
@@ -314,6 +314,10 @@ function BogoGram() {
     });
   } */
   const peel = () => {
+    if (!tilesInBag) {
+      alert("Not enough tiles in the bag!");
+      return
+    }
     const functions = getFunctions(app);
     const peel = httpsCallable(functions, 'peel');
     peel({gameID: gameNumber}).catch(error => {
@@ -326,6 +330,10 @@ function BogoGram() {
   // Dump: allows a player to return 1 letter to the bag and get back 3 randomly drawn ones
   // TODO: Please redo this for drag and drop functionality
   const dump = () => {
+    if (!tilesInBag) {
+      alert("Not enough tiles in the bag!");
+      return
+    }
     if (dumpRack.length !== 1) {
         alert("Please enter exactly one letter to dump.");
         return;
@@ -445,15 +453,18 @@ function BogoGram() {
   
     if (allValid) {
       // Current player wins
+      console.log("You win!")
       await updateDoc(gameRef, {
         gameOver: true,
         gameWinner: user.uid
       });
     } else {
       // Randomly choose a winner among the players
+      console.log("You have invalid letters, somebody else will win :(");
       const docSnapshot = await getDoc(gameRef);
       const data = docSnapshot.data();
-      const randomWinner = data.playerIDs[Math.floor(Math.random() * data.playerIDs.length)];
+      const randomWinner = data.playerID[Math.floor(Math.random() * data.playerID.length)];
+      console.log("Instead, the winner shall be: " + randomWinner);
       await updateDoc(gameRef, {
         gameOver: true,
         gameWinner: randomWinner
