@@ -76,12 +76,12 @@ exports.createGame = functions.https.onCall(async (data, content) => {
         "call the function when authenticated  ");
   }
   const gameID = generateGameId();
-  /* const letters = "AAABBBCCCDDDDEEEEEEEEEEEEEEEEEE" +
+  const letters = "AAABBBCCCDDDDEEEEEEEEEEEEEEEEEE" +
                   "FFFGGGGHHHIIIIIIIIIIIIJJKKLLLLLMMM" +
                   "NNNNNNNNOOOOOOOOOOOPPPQQRRRRRRRRR" +
-                  "SSSSSSTTTTTTTTTUUUUUUVVVWWWXXYYYZZ";*/
-  const letters = "AABBCCDDEEEEFFGGHHIIIIIIIIJJKKLLLLMM" +
-                  "NNOOOOPPSSSSTTTT";
+                  "SSSSSSTTTTTTTTTUUUUUUVVVWWWXXYYYZZ";
+  /* const letters = "AABBCCDDEEEEFFGGHHIIIIIIIIJJKKLLLLMM" +
+                  "NNOOOOPPSSSSTTTT"; */
   const shuffledLetters = shuffleArray(letters.split(""));
   const gameDataRef = firestore.collection("gameData").doc(gameID);
   await gameDataRef.set( {

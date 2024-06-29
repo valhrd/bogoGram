@@ -18,7 +18,7 @@ import TilesPlayed from './TilesPlayed';
 
 
 // Grid formation plus tilebag
-const gridSize = 35;
+const gridSize = 25;
 const initialGrid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(''));
 
 
