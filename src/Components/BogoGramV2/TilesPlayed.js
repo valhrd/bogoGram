@@ -9,16 +9,16 @@ export default class TilesPlayed {
   addTile(row, col) {
     this.tileCoordinates.add(`${row},${col}`);
     this.numberOfTilesPlayed++;
-    console.log(this.tileCoordinates);
-    console.log(this.numberOfTilesPlayed);
+    // console.log(this.tileCoordinates);
+    // console.log(this.numberOfTilesPlayed);
   }
 
   // Method to remove a tile
   removeTile(row, col) {
     this.tileCoordinates.delete(`${row},${col}`);
     this.numberOfTilesPlayed--;
-    console.log(this.tileCoordinates);
-    console.log(this.numberOfTilesPlayed);
+    // console.log(this.tileCoordinates);
+    // console.log(this.numberOfTilesPlayed);
   }
 
   // Clear set

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { database } from './firebaseConfig'; // Adjust the path if necessary
 import { getFunctions, httpsCallable} from 'firebase/functions'; //line 3 
 import { initializeApp } from 'firebase/app'; 
-import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 import { getAuth, signInWithPopup, GoogleAuthProvider, connectAuthEmulator, verifyPasswordResetCode } from 'firebase/auth';
 import { collection, getFirestore, query, orderBy, limit, doc, onSnapshot, updateDoc, getDoc } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -19,7 +18,7 @@ import TilesPlayed from './TilesPlayed';
 
 
 // Grid formation plus tilebag
-const gridSize = 25;
+const gridSize = 35;
 const initialGrid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(''));
 
 
@@ -49,13 +48,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const firestore = getFirestore(app);
-const appCheck = initializeAppCheck(app, {
-  provider: new ReCaptchaV3Provider('6LcUDAQqAAAAANVkU_mDYaTL-lTppYAcU2GEYemd'),
 
-  // Optional argument. If true, the SDK automatically refreshes App Check
-  // tokens as needed.
-  isTokenAutoRefreshEnabled: true
-});
 
 
 function BogoGram() {
@@ -295,6 +288,10 @@ function BogoGram() {
     });
   }; */
   const distributeLetters = () => {
+
+    // Prevent spam implementation
+    handleClickTimeOut();
+
     const functions = getFunctions(app);
     const distributeTiles = httpsCallable(functions, 'distributeTiles');
     distributeTiles({ gameID: gameNumber }).catch(error => {
@@ -321,6 +318,10 @@ function BogoGram() {
     });
   } */
   const peel = () => {
+
+    // Prevent spam implementation
+    handleClickTimeOut();
+
     if (!tilesInBag) {
       alert("Not enough tiles in the bag!");
       return
@@ -337,6 +338,10 @@ function BogoGram() {
   // Dump: allows a player to return 1 letter to the bag and get back 3 randomly drawn ones
   // TODO: Please redo this for drag and drop functionality
   const dump = () => {
+
+    // Prevent spam implementation
+    handleClickTimeOut();
+
     if (!tilesInBag) {
       alert("Not enough tiles in the bag!");
       return
@@ -436,6 +441,7 @@ function BogoGram() {
   
   
   const handleCheckWords = () => {
+
     if (!tPlayed.areAllTilesConnected()) {
       setValidationMessage("You have unconnected tiles!");
       setAllValid(false);
@@ -453,6 +459,10 @@ function BogoGram() {
   };
 
   const handleBananas = async () => {
+
+    // Prevent spam implementation
+    handleClickTimeOut();
+    
     handleCheckWords(); // This sets `allValidWords`
   
     if (!gameNumber || !user) return;
@@ -504,7 +514,19 @@ function BogoGram() {
     clearBoard();
   }
 
-  // New functions for drag and drop
+
+
+  const handleClickTimeOut = () => {
+    const button = document.querySelector(".doNotSpam");
+    button.disabled = true;
+    setTimeout(() => {
+      button.disabled = false;
+    }, 4000);
+  }
+
+
+
+  // Drag and drop
   const handleDragOver = (event) => {
     event.preventDefault();
   };
@@ -661,10 +683,10 @@ function BogoGram() {
         />
         <button id="button" onClick={handleJoinGame}>Join Game</button>
       </div>
-        <button id="button" onClick={() => distributeLetters()} disabled={tilesDistributed}>Distribute</button>
+        <button id="button" className="doNotSpam" onClick={() => distributeLetters()} disabled={tilesDistributed}>Distribute</button>
         <p className="game-name-display">{gameName ? `Current Game: ${gameName}` : "No game started"}</p>
         <button id="button" onClick={shuffleLetters}>Shuffle</button>
-        <button id="button" onClick={rebuildGrid}>Rebuild</button>
+        <button id="button" onClick={rebuildGrid} disabled={tPlayed.numberOfTilesPlayed === 0}>Rebuild</button>
         <button id="button" onClick={peel} disabled={!(tilesDistributed && !playerLetters.length) || !tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}>PEEL</button>
       </div>
       <div>
