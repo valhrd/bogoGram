@@ -745,7 +745,7 @@ function BogoGram() {
         <button id="button" onClick={dump} disabled={dumpRack.length !== 1} className="dump-button">DUMP!</button>
       </div>
       <div>
-        <button id="button" onClick={handleBananas} disabled={!(tilesDistributed && !playerLetters.length) || tilesInBag}>
+        <button id="button" onClick={handleBananas} disabled={!(tilesDistributed && !playerLetters.length) || tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}>
           BANANAS!
         </button> 
         {validationMessage && <p className="check-words-display">{validationMessage}</p>}
