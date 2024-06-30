@@ -443,6 +443,11 @@ function BogoGram() {
       }
     }
 
+    // For the final word in case the word touches the right or bottom edges of the board
+    if (word.length >= 2) {
+      words.push(word);
+    }
+
     return words;
   };
   
