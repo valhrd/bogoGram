@@ -23,19 +23,12 @@ const gridSize = 35;
 const initialGrid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(''));
 
 
-const letters = 'HAPPYBOOMVISTA';
+// const letters = 'HAPPYBOOMVISTA';
 let lettersArray;
+console.log(lettersArray);
 
 // Tiles played changes
 const tPlayed = new TilesPlayed();
-
-
-console.log(lettersArray);
-/* const auth= firebase.auth(); //new from here
-const firestore = firebase.firestore(); //until here
-*/
-
-
 
 const firebaseConfig = {
   apiKey: "AIzaSyDYKPbLTod93i-NeBcMigeZQB_N_7BshPU",
@@ -49,11 +42,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const firestore = getFirestore(app);
-const appCheck = initializeAppCheck(app, {
+const appCheck = initializeAppCheck(app, { // for recaptcha v3
   provider: new ReCaptchaV3Provider('6LcUDAQqAAAAANVkU_mDYaTL-lTppYAcU2GEYemd'),
-
-  // Optional argument. If true, the SDK automatically refreshes App Check
-  // tokens as needed.
   isTokenAutoRefreshEnabled: true
 });
 
@@ -65,15 +55,14 @@ function BogoGram() {
   // For word connectivity
   const [mustConnect, setMustConnect] = useState(false);
 
-
   // Meant to keep track of previous values of startRow and startCol for direction toggling
   const [startRow, setStartRow] = useState(null);
   const [startCol, setStartCol] = useState(null);
 
 
   // for server side things
-  const gameDataRef = collection(firestore, 'gameData'); //new on 3 Jun
-  const [gameName, setGameName] = useState(null); // this is for debugging, 8 Jun
+  const gameDataRef = collection(firestore, 'gameData'); 
+  const [gameName, setGameName] = useState(null); // this is for debugging
   const [gameNumber, setGameNumber] = useState(null);  // Changed to use useState
   const queryConstraints = query(gameDataRef, orderBy('createdAt'), limit(5)); // is this necessary? 
   const [gameStates] = useCollectionData(queryConstraints, { idField: 'gameID' }); // or this
@@ -81,7 +70,6 @@ function BogoGram() {
 
   // For other players to join the game
   const [inputGameId, setInputGameId] = useState('');
-
 
   // this is to lock the distribute and peel buttons when necessary
   const [tilesDistributed, setTilesDistributed] = useState(false);
@@ -99,7 +87,6 @@ function BogoGram() {
 
   // Player tile rack
   const [playerLetters, setPlayerLetters] = useState([]);
-
 
   // Dump rack
   const [dumpRack, setDumpRack] = useState([]);
@@ -167,10 +154,7 @@ function BogoGram() {
     });
   }
 
-
-
-  
-  
+  // authentication via google account
   const [user] = useAuthState(auth); 
   const signIn = async () => { 
     const provider = new GoogleAuthProvider(); 
@@ -180,8 +164,6 @@ function BogoGram() {
         console.error('SignIn Error:', error);
     }
   };
-
-
 
   const signOut = async () => {
     try {
@@ -193,7 +175,7 @@ function BogoGram() {
   };
 
 
-
+  // state updates for dictionary checking using Trie
   useEffect(() => {
     if (!dictionary) { //new on 11 jun
       fetch('/dictionary.json')  // Assuming your app is served from the root
@@ -219,20 +201,15 @@ function BogoGram() {
   }, [dictionary]); //new 11 Jun
 
 
-
+  // is this still necessary?
   const handleCellClick = (row, col) => {
     setStartRow(row);
     setStartCol(col);
     setHorizontal(!horizontal); // Change: keeps track of number of clicks
   };
 
-
-
-
-  // Dev start/restart game function
+  // start/restart game function
   const startGame = () => {
-    // Randomised array to represent tilebag
-    // lettersArray = letters.split('').sort((firstLetter, secondLetter) => 0.5 - Math.random());
     clearBoard();
     setPlayerLetters([]);
     const functions  = getFunctions(app);
@@ -253,8 +230,7 @@ function BogoGram() {
       alert("Please enter a valid game ID to join a game.");
       return;
     }
-    // Assuming you have initialized Firebase and have access to `getFunctions`
-    const functions = getFunctions(); // getFunctions needs to be initialized appropriately
+    const functions = getFunctions(); 
     const joinGame = httpsCallable(functions, 'joinGame');
     joinGame({ gameID: inputGameId.trim() }).then(result => {
       console.log(result.data.message);
@@ -328,10 +304,10 @@ function BogoGram() {
       console.error("Error listening to the game data:", error);
     });
 
-    return () => unsubscribe();  // Cleanup subscription on component unmount
+    return () => unsubscribe();  
   }, [gameNumber, user, firestore]);
 
-  // helper function for array equality, reduces numbger of updates
+  // helper function for array equality, reduces number of updates
   function arraysEqual(a,b) {
     if (a.length !== b.length) return false;
     for (let i = 0; i< a.length; ++i) {
@@ -341,20 +317,7 @@ function BogoGram() {
   }
 
   // Distribute letters to players
-  /* const distributeLetters = () => {
-    const functions = getFunctions(app);
-    const distributeTiles = httpsCallable(functions, 'distributeTiles');
-    distributeTiles({ gameID: gameNumber }).then((result) => {
-      setPlayerLetters(result.data.tiles);
-      console.log('Tiles distributed for game:', gameNumber);
-      setTilesDistributed(true);
-    }).catch(error => {
-      console.error('Error distributing tiles:', error);
-    });
-  }; */
-
   const distributeLetters = () => {
-
     const functions = getFunctions(app);
     const distributeTiles = httpsCallable(functions, 'distributeTiles');
     distributeTiles({ gameID: gameNumber }).catch(error => {
@@ -362,26 +325,8 @@ function BogoGram() {
     });
   };
   
-
   // Peel: provides a singular new letter to the player
-  /* const peel = () => {
-    const functions = getFunctions(app);
-    const peel = httpsCallable(functions, 'peel');
-    peel({gameID: gameNumber}).then((result) => {
-      const peeledTile = result.data.tile;
-      if (peeledTile === "*") {
-        setTilesInBag(false);
-        alert("No more tiles in the bag!");
-      } else {
-        setPlayerLetters(prevLetters => [...prevLetters, peeledTile]); // Append new tile to existing tiles
-        console.log('Peel for game:', gameNumber, 'Tile:', peeledTile);
-      }
-    }).catch(error => {
-      console.error('Error distributing tiles:', error);
-    });
-  } */
   const peel = () => {
-
     if (!tilesInBag) {
       alert("Not enough tiles in the bag!");
       return
@@ -394,11 +339,8 @@ function BogoGram() {
 }
 
 
-
   // Dump: allows a player to return 1 letter to the bag and get back 3 randomly drawn ones
-  // TODO: Please redo this for drag and drop functionality
   const dump = () => {
-
     if (!tilesInBag) {
       alert("Not enough tiles in the bag!");
       return
@@ -431,10 +373,6 @@ function BogoGram() {
         console.error('Error during dump operation:', error);
     });
   }
-
-
-
-
 
   
   // word checker: for end of game, to check if all words are valid (local/react instead of server for latency and operational cost)
