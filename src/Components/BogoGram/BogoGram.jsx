@@ -86,6 +86,79 @@ function BogoGram() {
   const [horizontal, setHorizontal] = useState(1);
 
   const [playerLetters, setPlayerLetters] = useState([]);
+<<<<<<< Updated upstream
+=======
+
+
+  // Dump rack
+  const [dumpRack, setDumpRack] = useState([]);
+
+  // Word validity 
+  const [allValid, setAllValid] = useState(false);
+
+  // game over management
+  const [gameOver, setGameOver] = useState(false);
+  const [gameWinner, setGameWinner] = useState('');
+
+
+  // Additional booleans and delay time to disable buttons that should not be spammed
+  // Buttons to disable: Start Game (may subject to change), Distribute, PEEL, DUMP, BANANAS!
+  // Value of delay is also subject to change
+  const [startGameDisabled, setStartGameDisabled] = useState(false);
+  const [distributeButtonDisabled, setDistributeButtonDisabled] = useState(false);
+  const [peelButtonDisabled, setPeelButtonDisabled] = useState(false);
+  const [dumpButtonDisabled, setDumpButtonDisabled] = useState(false);
+  const [bananasButtonDisabled, setBananasButtonDisabled] = useState(false);
+  const cooldown = 5000;
+  
+  // Try to "abstract"  since the structure is all the same
+  const buttonTimeOut = (disablingFunction) => {
+    setTimeout(disablingFunction, cooldown);
+  }
+
+  const handleStartGame = () => {
+    startGame();
+    setStartGameDisabled(true);
+    buttonTimeOut(() => {
+      setStartGameDisabled(false);
+    });
+  }
+
+  const handleDistributeButton = () => {
+    distributeLetters();
+    setDistributeButtonDisabled(true);
+    buttonTimeOut(() => {
+      setDistributeButtonDisabled(false);
+    });
+  }
+
+  const handlePeelButton = () => {
+    peel();
+    setPeelButtonDisabled(true);
+    buttonTimeOut(() => {
+      setPeelButtonDisabled(false);
+    });
+  }
+
+  const handleDumpButton = () => {
+    dump();
+    setDumpButtonDisabled(true);
+    buttonTimeOut(() => {
+      setDumpButtonDisabled(false);
+    });
+  }
+
+  const handleBananasButton = () => {
+    handleBananas();
+    setBananasButtonDisabled(true);
+    buttonTimeOut(() => {
+      setBananasButtonDisabled(false);
+    });
+  }
+
+
+
+>>>>>>> Stashed changes
   
   // Keeps track of all words played by this player;
   const wordsPlayed = [];
