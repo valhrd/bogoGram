@@ -112,6 +112,13 @@ function BogoGram() {
   const [gameWinner, setGameWinner] = useState('');
 
 
+  // Additional booleans and delay time to disable buttons that should not be spammed
+  // Prototype
+  const [distributeButtonDisabled, setDistributeButtonDisabled] = useState(false);
+  const [startGameDisabled, setStartGameDisabled] = useState(false);
+  const delay = 1000;
+  
+
   
   const [user] = useAuthState(auth); 
   const signIn = async () => { 
@@ -170,6 +177,14 @@ function BogoGram() {
 
 
 
+  const handleStartGame = () => {
+    startGame();
+    setStartGameDisabled(true);
+
+    setTimeout(() => {
+      setStartGameDisabled(false);
+    }, delay);
+  }
 
   // Dev start/restart game function
   const startGame = () => {
@@ -294,10 +309,17 @@ function BogoGram() {
       console.error('Error distributing tiles:', error);
     });
   }; */
-  const distributeLetters = () => {
 
-    // Prevent spam implementation
-    handleClickTimeOut();
+  const handleDistribute = () => {
+    distributeLetters();
+    setDistributeButtonDisabled(true);
+
+    setTimeout(() => {
+      setDistributeButtonDisabled(false);
+    }, delay);
+  }
+
+  const distributeLetters = () => {
 
     const functions = getFunctions(app);
     const distributeTiles = httpsCallable(functions, 'distributeTiles');
@@ -326,9 +348,6 @@ function BogoGram() {
   } */
   const peel = () => {
 
-    // Prevent spam implementation
-    handleClickTimeOut();
-
     if (!tilesInBag) {
       alert("Not enough tiles in the bag!");
       return
@@ -345,9 +364,6 @@ function BogoGram() {
   // Dump: allows a player to return 1 letter to the bag and get back 3 randomly drawn ones
   // TODO: Please redo this for drag and drop functionality
   const dump = () => {
-
-    // Prevent spam implementation
-    handleClickTimeOut();
 
     if (!tilesInBag) {
       alert("Not enough tiles in the bag!");
@@ -471,9 +487,6 @@ function BogoGram() {
   };
 
   const handleBananas = async () => {
-
-    // Prevent spam implementation
-    handleClickTimeOut();
     
     handleCheckWords(); // This sets `allValidWords`
   
@@ -524,16 +537,6 @@ function BogoGram() {
       }
     )));
     clearBoard();
-  }
-
-
-
-  const handleClickTimeOut = () => {
-    const button = document.querySelector(".doNotSpam");
-    button.disabled = true;
-    setTimeout(() => {
-      button.disabled = false;
-    }, 4000);
   }
 
 
@@ -685,7 +688,7 @@ function BogoGram() {
         <button id="button" onClick={signOut}>Sign Out</button>
       )}
       <div>
-        <button id="button" onClick={startGame}>Start game</button>
+        <button id="button" onClick={handleStartGame} disabled={startGameDisabled || gameName}>Start game</button>
         <div>
         <input
           type="text"
@@ -695,7 +698,7 @@ function BogoGram() {
         />
         <button id="button" onClick={handleJoinGame}>Join Game</button>
       </div>
-        <button id="button" className="doNotSpam" onClick={() => distributeLetters()} disabled={tilesDistributed}>Distribute</button>
+        <button id="button" onClick={handleDistribute} disabled={distributeButtonDisabled || tilesDistributed}>Distribute</button>
         <p className="game-name-display">{gameName ? `Current Game: ${gameName}` : "No game started"}</p>
         <button id="button" onClick={shuffleLetters}>Shuffle</button>
         <button id="button" onClick={rebuildGrid} disabled={tPlayed.numberOfTilesPlayed === 0}>Rebuild</button>
