@@ -113,12 +113,63 @@ function BogoGram() {
 
 
   // Additional booleans and delay time to disable buttons that should not be spammed
-  // Prototype
-  const [distributeButtonDisabled, setDistributeButtonDisabled] = useState(false);
+  // Buttons to disable: Start Game (may subject to change), Distribute, PEEL, DUMP, BANANAS!
+  // Value of delay is also subject to change
   const [startGameDisabled, setStartGameDisabled] = useState(false);
-  const delay = 1000;
+  const [distributeButtonDisabled, setDistributeButtonDisabled] = useState(false);
+  const [peelButtonDisabled, setPeelButtonDisabled] = useState(false);
+  const [dumpButtonDisabled, setDumpButtonDisabled] = useState(false);
+  const [bananasButtonDisabled, setBananasButtonDisabled] = useState(false);
+  const cooldown = 7000;
   
+  // Try to "abstract"  since the structure is all the same
+  const buttonTimeOut = (disablingFunction) => {
+    setTimeout(disablingFunction, cooldown);
+  }
 
+  const handleStartGame = () => {
+    startGame();
+    setStartGameDisabled(true);
+    buttonTimeOut(() => {
+      setStartGameDisabled(false);
+    });
+  }
+
+  const handleDistributeButton = () => {
+    distributeLetters();
+    setDistributeButtonDisabled(true);
+    buttonTimeOut(() => {
+      setDistributeButtonDisabled(false);
+    });
+  }
+
+  const handlePeelButton = () => {
+    peel();
+    setPeelButtonDisabled(true);
+    buttonTimeOut(() => {
+      setPeelButtonDisabled(false);
+    });
+  }
+
+  const handleDumpButton = () => {
+    dump();
+    setDumpButtonDisabled(true);
+    buttonTimeOut(() => {
+      setDumpButtonDisabled(false);
+    });
+  }
+
+  const handleBananasButton = () => {
+    handleBananas();
+    setBananasButtonDisabled(true);
+    buttonTimeOut(() => {
+      setBananasButtonDisabled(false);
+    });
+  }
+
+
+
+  
   
   const [user] = useAuthState(auth); 
   const signIn = async () => { 
@@ -177,14 +228,6 @@ function BogoGram() {
 
 
 
-  const handleStartGame = () => {
-    startGame();
-    setStartGameDisabled(true);
-
-    setTimeout(() => {
-      setStartGameDisabled(false);
-    }, delay);
-  }
 
   // Dev start/restart game function
   const startGame = () => {
@@ -309,15 +352,6 @@ function BogoGram() {
       console.error('Error distributing tiles:', error);
     });
   }; */
-
-  const handleDistribute = () => {
-    distributeLetters();
-    setDistributeButtonDisabled(true);
-
-    setTimeout(() => {
-      setDistributeButtonDisabled(false);
-    }, delay);
-  }
 
   const distributeLetters = () => {
 
@@ -698,11 +732,11 @@ function BogoGram() {
         />
         <button id="button" onClick={handleJoinGame}>Join Game</button>
       </div>
-        <button id="button" onClick={handleDistribute} disabled={distributeButtonDisabled || tilesDistributed}>Distribute</button>
+        <button id="button" onClick={handleDistributeButton} disabled={distributeButtonDisabled || tilesDistributed}>Distribute</button>
         <p className="game-name-display">{gameName ? `Current Game: ${gameName}` : "No game started"}</p>
         <button id="button" onClick={shuffleLetters}>Shuffle</button>
         <button id="button" onClick={rebuildGrid} disabled={tPlayed.numberOfTilesPlayed === 0}>Rebuild</button>
-        <button id="button" onClick={peel} disabled={!(tilesDistributed && !playerLetters.length) || !tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}>PEEL</button>
+        <button id="button" onClick={handlePeelButton} disabled={peelButtonDisabled || !(tilesDistributed && !playerLetters.length) || !tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}>PEEL</button>
       </div>
       <div>
         <h2 className="player-letters">Player Letters</h2>
@@ -750,10 +784,10 @@ function BogoGram() {
             ))}
           </div>
         </div> 
-        <button id="button" onClick={dump} disabled={dumpRack.length !== 1} className="dump-button">DUMP!</button>
+        <button id="button" onClick={handleDumpButton} disabled={dumpButtonDisabled || dumpRack.length !== 1} className="dump-button">DUMP!</button>
       </div>
       <div>
-        <button id="button" onClick={handleBananas} disabled={!(tilesDistributed && !playerLetters.length) || tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}>
+        <button id="button" onClick={handleBananasButton} disabled={bananasButtonDisabled || !(tilesDistributed && !playerLetters.length) || tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}>
           BANANAS!
         </button> 
         {validationMessage && <p className="check-words-display">{validationMessage}</p>}
