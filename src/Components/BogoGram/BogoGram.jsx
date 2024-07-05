@@ -341,7 +341,7 @@ function BogoGram() {
     peel({gameID: gameNumber}).catch(error => {
       console.error('Error requesting more tiles:', error);
     });
-}
+  }
 
 
   // Dump: allows a player to return 1 letter to the bag and get back 3 randomly drawn ones
@@ -646,10 +646,15 @@ function BogoGram() {
             </span>
           ))}
         </h1>
-        <button id="button" className="sign-in" onClick={signIn}>Sign In</button>
+        <button className="gameButton sign-in" onClick={signIn}>Sign In</button>
       </div>
     );
   }
+
+  const toggleBeastMode = () => {
+    setBeastMode(!beastMode);
+  }
+
 
   return (
     <div className="Game">
@@ -662,11 +667,12 @@ function BogoGram() {
       </h1>
       {/* Conditional rendering to show the sign-out button only when the user is signed in */}
       {user && (
-        <button id="button" onClick={signOut}>Sign Out</button>
+        <button className="gameButton" onClick={signOut}>Sign Out</button>
       )}
       <div>
-        <button id="button" onClick={handleStartGame} disabled={startGameDisabled || gameName}>Start game</button>
-        <button id="button" onClick={handleStartBeastGame} disabled={startGameDisabled || gameName}> Start A Beast Game </button>
+        <button className="gameButton" onClick={toggleBeastMode} disabled={startGameDisabled || gameName}>Toggle Beast Mode</button>
+        <button className="gameButton" onClick={beastMode ? handleStartBeastGame : handleStartGame} disabled={startGameDisabled || gameName}>{beastMode ? "Start A Beast Game" : "Start Game"}</button>
+        {/* {<button className="gameButton" onClick={handleStartBeastGame} disabled={startGameDisabled || gameName}> Start A Beast Game </button>} */}
         <div>
         <input
           type="text"
@@ -674,13 +680,13 @@ function BogoGram() {
           onChange={(e) => setInputGameId(e.target.value)}
           placeholder="Enter Game ID"
         />
-        <button id="button" onClick={handleJoinGame}>Join Game</button>
+        <button className="gameButton" onClick={handleJoinGame}>Join Game</button>
       </div>
-        <button id="button" onClick={handleDistributeButton} disabled={distributeButtonDisabled || tilesDistributed}>Distribute</button>
+        <button className="gameButton" onClick={handleDistributeButton} disabled={distributeButtonDisabled || tilesDistributed}>Distribute</button>
         <p className="game-name-display">{gameName ? `Current Game: ${gameName}` : "No game started"}</p>
-        <button id="button" onClick={shuffleLetters}>Shuffle</button>
-        <button id="button" onClick={rebuildGrid} disabled={tPlayed.numberOfTilesPlayed === 0}>Rebuild</button>
-        <button id="button" onClick={handlePeelButton} disabled={peelButtonDisabled || !(tilesDistributed && !playerLetters.length) || !tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}>PEEL</button>
+        <button className="gameButton" onClick={shuffleLetters}>Shuffle</button>
+        <button className="gameButton" onClick={rebuildGrid} disabled={tPlayed.numberOfTilesPlayed === 0}>Rebuild</button>
+        <button className="gameButton" onClick={handlePeelButton} disabled={peelButtonDisabled || !(tilesDistributed && !playerLetters.length) || !tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}>PEEL</button>
       </div>
       <div>
         <h2 className="player-letters">Player Letters</h2>
@@ -728,10 +734,10 @@ function BogoGram() {
             ))}
           </div>
         </div> 
-        <button id="button" onClick={handleDumpButton} disabled={dumpButtonDisabled || dumpRack.length !== 1} className="dump-button">DUMP!</button>
+        <button className="gameButton" onClick={handleDumpButton} disabled={dumpButtonDisabled || dumpRack.length !== 1}>DUMP!</button>
       </div>
       <div>
-        <button id="button" onClick={handleBananasButton} disabled={bananasButtonDisabled || !(tilesDistributed && !playerLetters.length) || tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}>
+        <button className="gameButton" onClick={handleBananasButton} disabled={bananasButtonDisabled || !(tilesDistributed && !playerLetters.length) || tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}>
           BANANAS!
         </button> 
         {validationMessage && <p className="check-words-display">{validationMessage}</p>}

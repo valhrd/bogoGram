@@ -89,7 +89,7 @@
 
 
 /* CSS for buttons in general */
-#button {
+.gameButton {
     background-color: rgb(240, 255, 172);
     color: rgb(0, 0, 0);
     font-weight: bold;
@@ -104,28 +104,28 @@
     transition: all 0.3s ease 0s;
 }
 
-#button:hover {
+.gameButton:hover {
     background-color: #47ff56; /* A lighter green on hover */
     box-shadow: 0 7px #22c24a; /* Deeper shadow for 3D effect on hover */
     transform: translateY(0px); /* Slight raise effect on hover */
 }
 
-#button:active {
+.gameButton:active {
     background-color: #47ff56; /* Even darker green when the button is clicked */
     box-shadow: 0 2px #22c24a; /* Flatter shadow when active */
     transform: translateY(7px); /* Pushed effect when clicked */
 }
 
-#button:focus {
+.gameButton:focus {
     background-color: rgb(240, 255, 172);
 }
 
-#button:disabled {
+.gameButton:disabled {
     background-color: rgb(173, 173, 173);
     box-shadow: 0 7px #505050; /* Flatter shadow when active */
 }
 
-#button:active:disabled {
+.gameButton:active:disabled {
     transform: none; /* Pushed effect when clicked */
 }
 
