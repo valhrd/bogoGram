@@ -671,18 +671,19 @@ function BogoGram() {
         <button className="gameButton" onClick={signOut}>Sign Out</button>
       )}
       <div>
-        <button className="gameButton" onClick={toggleBeastMode} disabled={startGameDisabled || gameName}>Toggle Beast Mode</button>
-        <button className="gameButton" onClick={beastMode ? handleStartBeastGame : handleStartGame} disabled={startGameDisabled || gameName}>{beastMode ? "Start A Beast Game" : "Start Game"}</button>
-        {/* {<button className="gameButton" onClick={handleStartBeastGame} disabled={startGameDisabled || gameName}> Start A Beast Game </button>} */}
+        <div className="startGameButtonContainer">
+          <button className={`${beastMode ? "beastModeToggle" : ""} gameButton`} onClick={beastMode ? handleStartBeastGame : handleStartGame} disabled={startGameDisabled || gameName}>{beastMode ? "Start A Beast Game" : "Start Game"}</button>
+          <button className="beastModeToggle beastMode" onClick={toggleBeastMode} disabled={startGameDisabled || gameName}></button>
+        </div>
         <div>
-        <input
-          type="text"
-          value={inputGameId}
-          onChange={(e) => setInputGameId(e.target.value)}
-          placeholder="Enter Game ID"
-        />
-        <button className="gameButton" onClick={handleJoinGame}>Join Game</button>
-      </div>
+          <input
+            type="text"
+            value={inputGameId}
+            onChange={(e) => setInputGameId(e.target.value)}
+            placeholder="Enter Game ID"
+          />
+          <button className="gameButton" onClick={handleJoinGame}>Join Game</button>
+        </div>
         <button className="gameButton" onClick={handleDistributeButton} disabled={distributeButtonDisabled || tilesDistributed}>Distribute</button>
         <p className="game-name-display">{gameName ? `Current Game: ${gameName}` : "No game started"}</p>
         <button className="gameButton" onClick={shuffleLetters}>Shuffle</button>

@@ -86,7 +86,12 @@
     font-size: 36px;
 }
 
-
+.startGameButtonContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: 52px;
+}
 
 /* CSS for buttons in general */
 .gameButton {
@@ -131,6 +136,50 @@
 
 .game-name-display {
     user-select: text;
+}
+
+.beastModeToggle {
+    background-color: red;
+    box-shadow: 0 7px #961616fc;
+    color: white;
+    transition: all 0.3s ease 0s;
+}
+
+.beastMode {
+    color: rgb(0, 0, 0);
+    border: none;
+    border-radius: 50%;
+    width: 42px;
+    height: 40px;
+    padding-bottom: 15px;
+    box-shadow: 0 7px #961616fc;
+    cursor: pointer;
+    transition: all 0.3s ease 0s;
+}
+
+.beastModeToggle:hover {
+    background-color: rgb(183, 0, 0); /* A lighter green on hover */
+    box-shadow: 0 7px #961616fc; /* Deeper shadow for 3D effect on hover */
+    transform: translateY(0px); /* Slight raise effect on hover */
+}
+
+.beastModeToggle:active {
+    background-color: red; /* Even darker green when the button is clicked */
+    box-shadow: 0 2px #961616fc; /* Flatter shadow when active */
+    transform: translateY(7px); /* Pushed effect when clicked */
+}
+
+.beastModeToggle:focus {
+    background-color: red;
+}
+
+.beastModeToggle:disabled {
+    background-color: rgb(173, 173, 173);
+    box-shadow: 0 7px #505050; /* Flatter shadow when active */
+}
+
+.beastMode:active:disabled {
+    transform: none; /* Pushed effect when clicked */
 }
 
 /* Edited grid CSS */
