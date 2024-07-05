@@ -86,12 +86,6 @@
     font-size: 36px;
 }
 
-.startGameButtonContainer {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-left: 52px;
-}
 
 /* CSS for buttons in general */
 .gameButton {
@@ -138,49 +132,119 @@
     user-select: text;
 }
 
+/* CSS ror the Beast Mode button */
 .beastModeToggle {
-    background-color: red;
-    box-shadow: 0 7px #961616fc;
-    color: white;
-    transition: all 0.3s ease 0s;
+    color: black;
+    font-family: 'Fredoka One', sans-serif;
+    font-size: 48px;
+
+    /* Tile borders */
+    width: 60px;
+    height: 55px;
+    margin: 2px;
+    border-radius: 5px;
+    background: linear-gradient(to bottom, rgb(240, 255, 172) 50%, rgb(80, 250, 95) 120px);
+    box-shadow: 0 5px #bcc56b;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
+.beastModeToggle .beastModeLetter {
+    font-weight: bold;
+    transform: scale(1,  calc(110 / 120));
+}
+
+.beastModeToggle:active {
+    box-shadow: 0 0px #22c24a; /* Deeper shadow for 3D effect on hover */
+    transition: all 0.3s ease 0s;
+    transform: translateY(5px); /* Pushed effect when clicked */
+}
+
+.beastModeToggle:focus {
+    background: linear-gradient(to bottom, rgb(240, 255, 172) 50%, rgb(80, 250, 95) 120px);
+}
+
+.beastModeToggle:disabled {
+    background: linear-gradient(to bottom, rgb(240, 255, 172) 50%, rgb(80, 250, 95) 120px);
+    box-shadow: 0 5px #bcc56b;
+    color:black;
+}
+
+.beastModeToggle:active:disabled {
+    transform: none;
+}
+
+/* For anything with the beastMode class after beastMode boolean is set to true */
 .beastMode {
-    color: rgb(0, 0, 0);
+    background: rgb(192, 0, 0);
+    box-shadow: 0 5px rgb(140, 0, 0);;
+    color: rgb(225, 225, 225);
+}
+
+.beastMode:hover {
+    background: rgb(192, 0, 0);
+}
+
+.beastMode:active {
+    background: rgb(192, 0, 0);
+}
+
+.beastMode:focus {
+    background: rgb(192, 0, 0);
+}
+
+.beastMode:disabled {
+    background: rgb(192, 0, 0);
+    box-shadow: 0 5px rgb(140, 0, 0);;
+    color: rgb(225, 225, 225);
+}
+
+/* Separate CSS for game buttons affected by beastMode */
+.beastModeGameButton {
+    background-color: rgb(192, 0, 0);
+    color: rgb(225, 225, 225);
+    font-weight: bold;
+    font-family: 'Fredoka One', sans-serif;
+    font-size: 16px;
+    padding: 12px 24px;
     border: none;
-    border-radius: 50%;
-    width: 42px;
-    height: 40px;
-    padding-bottom: 15px;
-    box-shadow: 0 7px #961616fc;
+    border-radius: 8px;
+    width: 200px;
+    box-shadow: 0 7px rgb(140, 0, 0);
     cursor: pointer;
     transition: all 0.3s ease 0s;
 }
 
-.beastModeToggle:hover {
-    background-color: rgb(183, 0, 0); /* A lighter green on hover */
-    box-shadow: 0 7px #961616fc; /* Deeper shadow for 3D effect on hover */
-    transform: translateY(0px); /* Slight raise effect on hover */
+.beastModeGameButton:hover {
+    background-color: rgb(140, 0, 0);
+    box-shadow: 0 7px rgb(110, 0, 0);
+    transform: translateY(0px);
 }
 
-.beastModeToggle:active {
-    background-color: red; /* Even darker green when the button is clicked */
-    box-shadow: 0 2px #961616fc; /* Flatter shadow when active */
-    transform: translateY(7px); /* Pushed effect when clicked */
+.beastModeGameButton:active {
+    background-color: rgb(140, 0, 0);
+    box-shadow: 0 2px rgb(110, 0, 0);
+    transform: translateY(7px);
 }
 
-.beastModeToggle:focus {
-    background-color: red;
+.beastModeGameButton:focus {
+    background-color: rgb(140, 0, 0);
 }
 
-.beastModeToggle:disabled {
+.gameButton:disabled {
     background-color: rgb(173, 173, 173);
     box-shadow: 0 7px #505050; /* Flatter shadow when active */
 }
 
-.beastMode:active:disabled {
+.gameButton:active:disabled {
     transform: none; /* Pushed effect when clicked */
 }
+
+
+
+
 
 /* Edited grid CSS */
 .grid {

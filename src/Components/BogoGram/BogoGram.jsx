@@ -660,8 +660,11 @@ function BogoGram() {
   return (
     <div className="Game">
       <h1 className="game-title">
-        {gameTitle.map((letter) => (
-          <span className="game-title-tile">
+        <button className={`beastModeToggle ${beastMode ? "beastMode" : ""}`} onClick={toggleBeastMode} disabled={startGameDisabled || gameName}>
+          <span className="beastModeLetter">B</span>
+        </button>
+        {gameTitle.slice(1).map((letter) => (
+          <span className={`game-title-tile ${beastMode ? "beastMode" : ""}`}>
             <span>{letter}</span>
           </span>
         ))}
@@ -672,8 +675,8 @@ function BogoGram() {
       )}
       <div>
         <div className="startGameButtonContainer">
-          <button className={`${beastMode ? "beastModeToggle" : ""} gameButton`} onClick={beastMode ? handleStartBeastGame : handleStartGame} disabled={startGameDisabled || gameName}>{beastMode ? "Start A Beast Game" : "Start Game"}</button>
-          <button className="beastModeToggle beastMode" onClick={toggleBeastMode} disabled={startGameDisabled || gameName}></button>
+          <button className={`${beastMode ? "beastModeGameButton" : ""} gameButton`} onClick={beastMode ? handleStartBeastGame : handleStartGame} disabled={startGameDisabled || gameName}>{beastMode ? "Start A Beast Game" : "Start Game"}</button>
+          {/* {<button className="game-title-tile beastModeToggle beastMode" onClick={toggleBeastMode} disabled={startGameDisabled || gameName}></button>} */}
         </div>
         <div>
           <input
