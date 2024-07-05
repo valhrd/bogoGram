@@ -17,7 +17,6 @@ import './BogoGram.css';
 import Tile from './Tile';
 import TilesPlayed from './TilesPlayed';
 
-
 // Grid formation plus tilebag
 const gridSize = 35;
 const initialGrid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(''));
@@ -98,6 +97,8 @@ function BogoGram() {
   const [gameOver, setGameOver] = useState(false);
   const [gameWinner, setGameWinner] = useState('');
 
+  // beast mode
+  const [beastMode, setBeastMode] = useState(false);
 
   // Additional booleans and delay time to disable buttons that should not be spammed
   // Buttons to disable: Start Game (may subject to change), Distribute, PEEL, DUMP, BANANAS!
@@ -115,7 +116,16 @@ function BogoGram() {
   }
 
   const handleStartGame = () => {
-    startGame();
+    startGame(false);
+    setStartGameDisabled(true);
+    buttonTimeOut(() => {
+      setStartGameDisabled(false);
+    });
+  }
+
+  const handleStartBeastGame = () => {
+    setBeastMode(true);
+    startGame(false);
     setStartGameDisabled(true);
     buttonTimeOut(() => {
       setStartGameDisabled(false);
@@ -209,16 +219,17 @@ function BogoGram() {
   };
 
   // start/restart game function
-  const startGame = () => {
+  const startGame = (isBeastMode) => {
     clearBoard();
     setPlayerLetters([]);
     const functions  = getFunctions(app);
     const createGame = httpsCallable(functions, 'createGame');
-    createGame().then((result) => {
+    createGame({beastMode: isBeastMode}).then((result) => {
       console.log('New Game Created with ID: ', result.data.gameID);
       setGameNumber(result.data.gameID);
-      setGameName("Game " + result.data.gameID); // for debugging purposes
+      setGameName(`${isBeastMode ? "Beast Mode" : ""} Game ` + result.data.gameID);
       setAllValid(false);
+      setBeastMode(isBeastMode);
     }).catch(error => {
       console.error('Error in creating new game', error);
     });
@@ -234,9 +245,10 @@ function BogoGram() {
     const joinGame = httpsCallable(functions, 'joinGame');
     joinGame({ gameID: inputGameId.trim() }).then(result => {
       console.log(result.data.message);
-      let res = inputGameId.trim()
+      const res = inputGameId.trim();
       setGameNumber(res); // Set the current game ID to the one joined
-      setGameName("Game " + res); // for debugging purposes
+      setGameName(result.data.beastMode ? "Beast Mode Game " + res : "Game " + res); // Adjust the game name based on the mode
+      setBeastMode(result.data.beastMode); // Set beast mode state
       alert("Successfully joined the game!");
       setInputGameId(''); // Clear the input field
       setAllValid(false);
@@ -267,7 +279,6 @@ function BogoGram() {
   // Handle reading firestore docs for tile distribution
   useEffect(() => {
     if (!gameNumber || !user) return;
-
     const gameRef = doc(firestore, 'gameData', gameNumber);
     const unsubscribe = onSnapshot(gameRef, (docSnapshot) => {
       if (!docSnapshot.exists()) {
@@ -278,20 +289,16 @@ function BogoGram() {
       const updatesRef = doc(firestore, 'gameData', gameNumber);
       if (data.tileDistribution && data.tileDistribution[user.uid]) {
         if (!arraysEqual(data.tileDistribution[user.uid], playerLetters) && !tilesDistributed) {
-          setPlayerLetters(data.tileDistribution[user.uid]);
-          
+          setPlayerLetters(data.tileDistribution[user.uid]); 
           updateDoc(updatesRef, {['tileDistribution.' + user.uid]: []});
           setTilesDistributed(true);
         }
-        
         if (data.tileUpdates && data.tileUpdates[user.uid]) {
           setPlayerLetters(prevLetters => [...prevLetters, ...data.tileUpdates[user.uid]]);
-          
           updateDoc(updatesRef, {['tileUpdates.' + user.uid]: []});
         }
         if (!data.tilesInBag) {
           setTilesInBag(false);
-          
         }
         if (data.gameOver) {
           setGameOver(true);
@@ -299,11 +306,9 @@ function BogoGram() {
           alert(data.gameWinner === user.uid ? "By some lottery, you have won the game!" : "Game over! Boo hoo.");
         }
       }
-
     }, error => {
       console.error("Error listening to the game data:", error);
     });
-
     return () => unsubscribe();  
   }, [gameNumber, user, firestore]);
 
@@ -661,6 +666,7 @@ function BogoGram() {
       )}
       <div>
         <button id="button" onClick={handleStartGame} disabled={startGameDisabled || gameName}>Start game</button>
+        <button id="button" onClick={handleStartBeastGame} disabled={startGameDisabled || gameName}> Start A Beast Game </button>
         <div>
         <input
           type="text"

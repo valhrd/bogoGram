@@ -15,7 +15,7 @@ const firestore = admin.firestore();
 
 const adjectives = ["Affectionate", "Majestic", "Playful", "Graceful", "Loyal",
   "Intelligent", "Gentle", "Energetic", "Vibrant", "Friendly", "Brave",
-  "Cheerful", "Curious", "Loving", "Noble"];
+  "Cheerful", "Curious", "Loving", "Noble", "Quick", "Speedy", "Sneaky"];
 const colours = ["Red", "Blue", "Green", "Yellow", "Pink", "Orange", "Brown",
   "Purple", "White", "Black"];
 const animals = ["Dog", "Cat", "Elephant", "Lion", "Tiger", "Giraffe", "Bear",
@@ -26,7 +26,7 @@ const animals = ["Dog", "Cat", "Elephant", "Lion", "Tiger", "Giraffe", "Bear",
   "Crab", "Lobster", "Crayfish", "Guppy", "Tuna", "Salmon", "Eagle",
   "Panther", "Leopard", "Hawk", "Cod", "Swordfish", "Rhino", "Sardines",
   "Wolf", "Turtle", "Capybara", "Frog", "Slug", "Sloth", "Goat", "Hamster"];
-// 8850 possibilities
+// 10620 possibilities
 
 /**
  * Randomly generates a gameID from the adjectives, colours and animals above
@@ -76,21 +76,35 @@ exports.createGame = functions.https.onCall(async (data, content) => {
         "call the function when authenticated  ");
   }
   const gameID = generateGameId();
-  const letters = "AAABBBCCCDDDDEEEEEEEEEEEEEEEEEE" +
-                  "FFFGGGGHHHIIIIIIIIIIIIJJKKLLLLLMMM" +
-                  "NNNNNNNNOOOOOOOOOOOPPPQQRRRRRRRRR" +
-                  "SSSSSSTTTTTTTTTUUUUUUVVVWWWXXYYYZZ";
-  /* const letters = "AABBCCDDEEEEFFGGHHIIIIIIIIJJKKLLLLMM" +
-                  "NNOOOOPPSSSSTTTT"; */
-  const shuffledLetters = shuffleArray(letters.split(""));
+  let letters;
+  let tiles;
+  if (data.beastMode) {
+    const letters0 = "AAAAEEEEEEEEEEEEEEEEEE" +
+                  "IIIIIIIIIIIIOOOOOOOOOOO" +
+                  "UUUUUULLLLLNNNNNNNNSSSSSS" +
+                  "RRRRRRRRRTTTTTTTTT";
+    const letters1 = "DDDGGGGBBBCCCMMMPPP";
+    const letters2 = "FFFHHHVVVWWXXYYYZZJJKKQQ";
+    const shuffledLetters0 = shuffleArray(letters0.split(""));
+    const shuffledLetters1 = shuffleArray(letters1.split(""));
+    const shuffledLetters2 = shuffleArray(letters2.split(""));
+    tiles = [shuffledLetters0, shuffledLetters1, shuffledLetters2];
+  } else {
+    letters = "AAAABBBCCCDDDDEEEEEEEEEEEEEEEEEE" +
+              "FFFGGGGHHHIIIIIIIIIIIIJJKKLLLLLMMM" +
+              "NNNNNNNNOOOOOOOOOOOPPPQQRRRRRRRRR" +
+              "SSSSSSTTTTTTTTTUUUUUUVVVWWWXXYYYZZ";
+    tiles = shuffleArray(letters.split(""));
+  }
   const gameDataRef = firestore.collection("gameData").doc(gameID);
   await gameDataRef.set( {
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     playerID: [content.auth.uid],
-    tiles: shuffledLetters,
+    tiles: tiles,
     tilesInBag: true,
     gameOver: false,
     gameWinner: "",
+    beastMode: data.beastMode || false,
   });
   return {gameID: gameDataRef.id};
 });
@@ -105,10 +119,14 @@ exports.joinGame = functions.https.onCall(async (data, context) => {
   if (!doc.exists) {
     throw new Error("Game not found.");
   }
+  const gameData = doc.data();
   await gameDataRef.update({
     playerID: admin.firestore.FieldValue.arrayUnion(context.auth.uid),
   });
-  return {message: "Successfully joined the game"};
+  return {
+    message: "Successfully joined the game",
+    beastMode: gameData.beastMode || false,
+  };
 });
 
 
@@ -144,12 +162,6 @@ exports.distributeTiles = functions.https.onCall(async (data, context) => {
     tileUpdates: tileUpdates,
   });
   return {status: "Tiles distributed"};
-  /* const tilesToPlayer = tiles.slice(0, 7);
-  const remainingTiles = tiles.slice(7);
-
-  await gameDataRef.update({tiles: remainingTiles});
-
-  return {tiles: tilesToPlayer};*/
 });
 
 exports.peel = functions.https.onCall(async (data, context) => {
@@ -190,20 +202,6 @@ exports.peel = functions.https.onCall(async (data, context) => {
     return {status: "Bag is empty!"};
   }
 });
-/*
-  let tilesToPlayer;
-  if (serverTiles.length === 0) {
-    tilesToPlayer = "*";
-  } else {
-    tilesToPlayer = serverTiles[0];
-    await gameDataRef.update({
-      tiles: admin.firestore.FieldValue.arrayRemove(tilesToPlayer),
-    });
-  }
-  // Return the tile
-  return {tile: tilesToPlayer};
-
-}); */
 
 exports.dumpTile = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
