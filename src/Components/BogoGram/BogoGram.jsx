@@ -125,7 +125,7 @@ function BogoGram() {
 
   const handleStartBeastGame = () => {
     setBeastMode(true);
-    startGame(false);
+    startGame(true);
     setStartGameDisabled(true);
     buttonTimeOut(() => {
       setStartGameDisabled(false);
@@ -633,6 +633,11 @@ function BogoGram() {
     .catch(error => console.error('Error updating the database:', error));
   };
 
+  const toggleBeastMode = () => {
+    const newBeastMode = !beastMode;
+    setBeastMode(newBeastMode);
+  }
+
   // Just for convenience to make the game title
   const gameTitle = ['B','O','G','O','G','R','A','M'];
 
@@ -649,10 +654,6 @@ function BogoGram() {
         <button className="gameButton sign-in" onClick={signIn}>Sign In</button>
       </div>
     );
-  }
-
-  const toggleBeastMode = () => {
-    setBeastMode(!beastMode);
   }
 
 

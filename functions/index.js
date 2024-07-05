@@ -70,44 +70,75 @@ function numTilesPerPlayer(numPlayers) {
   }
 }
 
+/**
+ * Determines a random number below the maximum number provided
+ *
+ * @param {int} num – The maximum number of tiles
+ * @param {int} numPlayers – the number of players
+ * @return {[int]} number of Tiles
+ */
+function mathRand(num, numPlayers) {
+  const cat2 = Math.floor(Math.random() * (num));
+  const cat1 = Math.floor(Math.random() * (num));
+  const cat0 = numTilesPerPlayer(numPlayers) - cat1 - cat2;
+  return [cat0, cat1, cat2];
+}
+
+/**
+ * Determines the number of tiles per player
+ *
+ * @param {int} numPlayers – The number of players playing the game
+ * @return {[int]} number of Tiles per player per type
+ */
+function numTilesPerCat(numPlayers) {
+  if (1 <= numPlayers && numPlayers <= 4) {
+    return mathRand(5, numPlayers);
+  } else if (5 <= numPlayers && numPlayers <= 6) {
+    return mathRand(3, numPlayers);
+  } else if (7 <= numPlayers && numPlayers <= 8) {
+    return mathRand(2, numPlayers);
+  }
+  return [];
+}
+
 exports.createGame = functions.https.onCall(async (data, content) => {
   if (!content.auth) {
     throw new functions.https.HttpsError("unauthenticated",
-        "call the function when authenticated  ");
+        "call the function when authenticated");
   }
   const gameID = generateGameId();
-  let letters;
-  let tiles;
-  if (data.beastMode) {
-    const letters0 = "AAAAEEEEEEEEEEEEEEEEEE" +
-                  "IIIIIIIIIIIIOOOOOOOOOOO" +
-                  "UUUUUULLLLLNNNNNNNNSSSSSS" +
-                  "RRRRRRRRRTTTTTTTTT";
-    const letters1 = "DDDGGGGBBBCCCMMMPPP";
-    const letters2 = "FFFHHHVVVWWXXYYYZZJJKKQQ";
-    const shuffledLetters0 = shuffleArray(letters0.split(""));
-    const shuffledLetters1 = shuffleArray(letters1.split(""));
-    const shuffledLetters2 = shuffleArray(letters2.split(""));
-    tiles = [shuffledLetters0, shuffledLetters1, shuffledLetters2];
-  } else {
-    letters = "AAAABBBCCCDDDDEEEEEEEEEEEEEEEEEE" +
-              "FFFGGGGHHHIIIIIIIIIIIIJJKKLLLLLMMM" +
-              "NNNNNNNNOOOOOOOOOOOPPPQQRRRRRRRRR" +
-              "SSSSSSTTTTTTTTTUUUUUUVVVWWWXXYYYZZ";
-    tiles = shuffleArray(letters.split(""));
-  }
-  const gameDataRef = firestore.collection("gameData").doc(gameID);
-  await gameDataRef.set( {
+  const gameData = {
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     playerID: [content.auth.uid],
-    tiles: tiles,
     tilesInBag: true,
     gameOver: false,
     gameWinner: "",
     beastMode: data.beastMode || false,
-  });
+  };
+
+  if (data.beastMode) {
+    const letters0 = "AAAAEEEEEEEEEEEEEEEEEE" +
+                     "IIIIIIIIIIIIOOOOOOOOOOO" +
+                     "UUUUUULLLLLNNNNNNNNSSSSSS" +
+                     "RRRRRRRRRTTTTTTTTT";
+    const letters1 = "DDDGGGGBBBCCCMMMPPP"; // 19 chars
+    const letters2 = "FFFHHHVVVWWXXYYYZZJJKKQQ";
+    gameData.tiles0 = shuffleArray(letters0.split(""));
+    gameData.tiles1 = shuffleArray(letters1.split(""));
+    gameData.tiles2 = shuffleArray(letters2.split(""));
+  } else {
+    const letters = "AAAABBBCCCDDDDEEEEEEEEEEEEEEEEEE" +
+                    "FFFGGGGHHHIIIIIIIIIIIIJJKKLLLLLMMM" +
+                    "NNNNNNNNOOOOOOOOOOOPPPQQRRRRRRRRR" +
+                    "SSSSSSTTTTTTTTTUUUUUUVVVWWWXXYYYZZ";
+    gameData.tiles = shuffleArray(letters.split(""));
+  }
+
+  const gameDataRef = firestore.collection("gameData").doc(gameID);
+  await gameDataRef.set(gameData);
   return {gameID: gameDataRef.id};
 });
+
 
 exports.joinGame = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
@@ -135,32 +166,60 @@ exports.distributeTiles = functions.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError("unauthenticated",
         "The function must be called while authenticated.");
   }
-
   const gameDataRef = admin.firestore().collection("gameData").doc(data.gameID);
-  if (!(await gameDataRef.get()).exists) {
+  const doc = await gameDataRef.get();
+  if (!doc.exists) {
     throw new Error("Game not found.");
   }
-  const doc = await gameDataRef.get();
-  /* const letters = "AABBCCE"; */
-  const tiles = doc.data().tiles;
   const gameData = doc.data();
   const playerIDs = gameData.playerID;
   const numTiles = numTilesPerPlayer(playerIDs.length);
+  // Only used in non-beast mode
   const tileDistributions = {};
-  const tileUpdates = {};
-  let maxIndex = 0;
-  playerIDs.forEach((playerID, index) => {
-    const playerTiles = tiles.slice(index * numTiles, (index + 1) * numTiles);
-    tileDistributions[playerID] = playerTiles;
-    maxIndex = (index + 1) * numTiles;
-  });
-  const remainingTiles = tiles.slice(maxIndex);
-  await gameDataRef.update({
-    tileDistribution: tileDistributions,
-    tiles: remainingTiles,
-    tilesDistributed: true,
-    tileUpdates: tileUpdates,
-  });
+
+  if (gameData.beastMode) {
+    // Retrieve tile arrays for each category from the document
+    const tiles0 = gameData.tiles0 || [];
+    const tiles1 = gameData.tiles1 || [];
+    const tiles2 = gameData.tiles2 || [];
+    const numTilesCategories = numTilesPerCat(playerIDs.length);
+
+    playerIDs.forEach((playerID) => {
+      tileDistributions[playerID] = [];
+      [tiles0, tiles1, tiles2].forEach((tileArray, index) => {
+        const numTilesFromCategory = numTilesCategories[index];
+        tileDistributions[playerID] = tileDistributions[playerID]
+            .concat(tileArray.splice(0, numTilesFromCategory));
+      });
+    });
+
+    // Update the document with modified tile arrays and distributions
+    await gameDataRef.update({
+      tiles0: tiles0,
+      tiles1: tiles1,
+      tiles2: tiles2,
+      tileDistribution: tileDistributions,
+      tilesDistributed: true,
+      tileUpdates: {}, // Assuming you reset or manage tile updates elsewhere
+    });
+  } else {
+    const tiles = gameData.tiles || [];
+    let startIndex = 0;
+    playerIDs.forEach((playerID) => {
+      tileDistributions[playerID] = tiles
+          .slice(startIndex, startIndex + numTiles);
+      startIndex += numTiles;
+    });
+
+    // Update tiles remaining in the array
+    await gameDataRef.update({
+      tiles: tiles.slice(startIndex),
+      tileDistribution: tileDistributions,
+      tilesDistributed: true,
+      tileUpdates: {},
+    });
+  }
+
   return {status: "Tiles distributed"};
 });
 
@@ -170,38 +229,78 @@ exports.peel = functions.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError("unauthenticated",
         "The function must be called while authenticated.");
   }
+
   // Get the game document
   const gameDataRef = admin.firestore().collection("gameData").doc(data.gameID);
   const doc = await gameDataRef.get();
+
   // Check if the document exists
   if (!doc.exists) {
     throw new Error("Game not found.");
   }
+
   const gameData = doc.data();
-  const serverTiles = gameData.tiles;
   const playerIDs = gameData.playerID;
-  const bagTiles = serverTiles.length >= playerIDs.length;
   const tileUpdates = gameData.tileUpdates || {};
-  if (bagTiles) {
+  let tilesUpdated = false;
+
+  // Update tiles based on whether it is a beast mode game
+  if (gameData.beastMode) {
+    const tiles0 = gameData.tiles0 || [];
+    const tiles1 = gameData.tiles1 || [];
+    const tiles2 = gameData.tiles2 || [];
+    const tilesCategories = [tiles0, tiles1, tiles2];
+
     playerIDs.forEach((playerID) => {
-      const tile = serverTiles.shift(); // Remove the first tile for each player
       if (!tileUpdates[playerID]) {
         tileUpdates[playerID] = [];
       }
-      tileUpdates[playerID].push(tile);
+      // Distribute 3 tiles, prioritize from lower value arrays
+      for (let i = 0; i < 3; i++) {
+        for (const tiles of tilesCategories) {
+          if (tiles.length > 0) {
+            tileUpdates[playerID].push(tiles.shift());
+            tilesUpdated = true;
+            break;
+          }
+        }
+      }
+    });
+    // Update Firestore document with new tile arrays
+    await gameDataRef.update({
+      tiles0: tiles0,
+      tiles1: tiles1,
+      tiles2: tiles2,
+      tileUpdates: tileUpdates,
+      tilesInBag: tiles0.length > 0 || tiles1.length > 0 ||
+      tiles2.length > playerIDs.length(),
+    });
+  } else {
+    // Handle regular game mode
+    const serverTiles = gameData.tiles || [];
+
+    playerIDs.forEach((playerID) => {
+      if (serverTiles.length > 0) {
+        if (!tileUpdates[playerID]) {
+          tileUpdates[playerID] = [];
+        }
+        tileUpdates[playerID].push(serverTiles.shift());
+        // Peel one tile per player
+        tilesUpdated = true;
+      }
+    });
+
+    await gameDataRef.update({
+      tiles: serverTiles,
+      tileUpdates: tileUpdates,
+      tilesInBag: serverTiles.length > 0,
     });
   }
-  await gameDataRef.update({
-    tiles: serverTiles,
-    tileUpdates: tileUpdates,
-    tilesInBag: bagTiles,
-  });
-  if (bagTiles) {
-    return {status: "Tiles distributed"};
-  } else {
-    return {status: "Bag is empty!"};
-  }
+
+  return tilesUpdated ? {status: "Tiles distributed"} :
+  {status: "Bag is empty!"};
 });
+
 
 exports.dumpTile = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
@@ -215,27 +314,73 @@ exports.dumpTile = functions.https.onCall(async (data, context) => {
     throw new Error("Game not found.");
   }
 
-  let serverTiles = doc.data().tiles;
-  const playerIDs = doc.data().playerID;
-  // Handle the case where there are fewer than 3 tiles left
-  if (serverTiles.length < 3) { // if < 3 tiles in the bag, return all
-    await gameDataRef.update({
-      tilesInBag: false,
-    });
-    return {tiles: serverTiles};
-  }
-  const randomIndex = Math.floor(Math.random() * serverTiles.length);
-  serverTiles = [
-    ...serverTiles.slice(0, randomIndex), data.tile,
-    ...serverTiles.slice(randomIndex),
-  ];
-  const bagTiles = (serverTiles.length - 3) >= playerIDs.length;
-  const tilesToPlayer = serverTiles.slice(0, 3);
-  await gameDataRef.update({
-    tiles: serverTiles.slice(3),
-    tilesInBag: bagTiles,
-  });
+  const gameData = doc.data();
+  let serverTiles = gameData.tiles;
+  const playerIDs = gameData.playerID;
+  const dumpedTile = data.tile.toUpperCase();
 
-  return {tiles: tilesToPlayer};
+  if (gameData.beastMode) {
+    // Handle beast mode tile categorization
+    const tiles0 = gameData.tiles0 || [];
+    const tiles1 = gameData.tiles1 || [];
+    const tiles2 = gameData.tiles2 || [];
+
+    if ("AEIOULNSRT".includes(dumpedTile)) {
+      tiles0.push(dumpedTile);
+    } else if ("DGBCMP".includes(dumpedTile)) {
+      tiles1.push(dumpedTile);
+    } else if ("FHVWXYZJKQ".includes(dumpedTile)) {
+      tiles2.push(dumpedTile);
+    } else {
+      console.error("Dumped tile does not match any category:", dumpedTile);
+    }
+
+    serverTiles = [tiles0, tiles1, tiles2];
+    const tilesToPlayer = [];
+
+    // Return 5 tiles starting from the lower value arrays
+    for (let i = 0; i < 5; i++) {
+      for (const tiles of serverTiles) {
+        if (tiles.length > 0) {
+          tilesToPlayer.push(tiles.shift());
+          if (tilesToPlayer.length === 5) break;
+        }
+      }
+      if (tilesToPlayer.length === 5) break;
+    }
+
+    await gameDataRef.update({
+      tiles0: tiles0,
+      tiles1: tiles1,
+      tiles2: tiles2,
+      tilesInBag: tiles0.length > 0 || tiles1.length > 0 || tiles2.length > 0,
+    });
+
+    return {tiles: tilesToPlayer};
+  } else {
+    // Normal gameplay logic
+    if (serverTiles.length < 3) {
+      await gameDataRef.update({
+        tilesInBag: false,
+      });
+      return {tiles: serverTiles};
+    }
+    const randomIndex = Math.floor(Math.random() * serverTiles.length);
+    serverTiles = [
+      ...serverTiles.slice(0, randomIndex), dumpedTile,
+      ...serverTiles.slice(randomIndex),
+    ];
+    const bagTiles = (serverTiles.length - 3) >= playerIDs.length;
+    // Update for 5 tiles
+    const tilesToPlayer = serverTiles.slice(0, 3);
+
+    await gameDataRef.update({
+      tiles: serverTiles.slice(3),
+      tilesInBag: bagTiles,
+    });
+
+    return {tiles: tilesToPlayer};
+  }
 });
+
 
