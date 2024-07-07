@@ -750,6 +750,7 @@ function BogoGram() {
                 letter={letter}
                 key={index}
                 className="player-letter"
+                draggable={true}
                 
                 // Additional code for drag and drop feature
                 onDragStart={(event) => handleRackDragStart(event, letter, index)}
@@ -772,7 +773,8 @@ function BogoGram() {
               <Tile
                 letter={letter}
                 key={index}
-                className="dump-letter"
+                className={`${dumpButtonDisabled ? "dump-cooldown" : ""} dump-letter`}
+                draggable={!dumpButtonDisabled}
                 
                 // Additional code for drag and drop feature
                 onDragStart={(event) => handleDumpDragStart(event, letter, 0)}
@@ -805,6 +807,7 @@ function BogoGram() {
                   key={colIndex}
                   className={`${cell ? 'board-tile' : ''} ${startRow === rowIndex && startCol === colIndex ? 'selected' : ''}`}
                   onClick={() => handleCellClick(rowIndex, colIndex)}
+                  draggable={true}
 
                   // Testing drag and drop functionality
                   onDragStart={(event) => handleCellDragStart(event, cell, rowIndex, colIndex)}

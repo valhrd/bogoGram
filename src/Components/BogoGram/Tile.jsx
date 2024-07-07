@@ -1,6 +1,6 @@
 import React from 'react';
 
-function Tile({ letter, key, className, onClick, onDragOver, onDrop, onDragStart }) {
+function Tile({ letter, key, className, onClick, onDragOver, onDrop, onDragStart, draggable}) {
     const cursorStyle = letter ? 'grab' : 'auto';
     return (
         <div
@@ -10,7 +10,7 @@ function Tile({ letter, key, className, onClick, onDragOver, onDrop, onDragStart
             onDragOver={onDragOver}
             onDrop={onDrop}
             onDragStart={onDragStart}
-            draggable={letter !== ""}
+            draggable={letter !== "" && draggable}
             style={{cursor : cursorStyle}}
         >
         {letter}

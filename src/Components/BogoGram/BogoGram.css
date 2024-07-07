@@ -321,7 +321,6 @@ input, select, button {
     max-width: 900px;
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 100px;
 }
 
 
@@ -371,13 +370,20 @@ input, select, button {
     margin: 5px;
     border-radius: 3px;
     background: linear-gradient(to bottom, rgb(240, 255, 172) 50%, rgb(80, 250, 95) 120px);
-    box-shadow: 0 5px #bcc56b;
+    box-shadow: 0 3px #bcc56b;
 
     display: inline-flex;
     justify-content: center;
     align-items: center;
     margin: 2px;
     cursor: grab;
+}
+
+.dump-rack .dump-cooldown {
+    background: rgb(173, 173, 173);
+    box-shadow: 0 0px #505050;
+    transition: all 0.3s ease 0s;
+    transform: translateY(3px)
 }
 
 button {
