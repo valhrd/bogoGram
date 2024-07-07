@@ -1,0 +1,8 @@
+.Background {
+    background: linear-gradient(to bottom, rgb(0, 179, 101) 3%, rgb(0, 113, 64) 12%, rgb(0, 71, 40) 24%, rgb(0, 45, 26) 100%);
+    height: 100%;
+    margin-top: -25px;
+    padding-top: 25px;
+    transition: opacity 2s;
+}
+

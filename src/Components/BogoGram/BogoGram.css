@@ -1,54 +1,7 @@
-/*  Login screen CSS */
-.Login {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    flex-direction: column;
-    text-align: center; 
-    background: linear-gradient(to bottom, rgba(10,106,0,1) 10%, rgba(26,157,0,1) 39%, rgba(56,255,0,1) 100%);
-    user-select: none;
-}
-
-.login-title {
-    display: flex;
-}
-
-.login-title-tile {
-    color: black;
-    font-family: 'Fredoka One', sans-serif;
-    font-size: 96px;
-
-    /* Tile borders */
-    width: 120px;
-    height: 110px;
-    margin: 5px;
-    border-radius: 10px;
-    background: linear-gradient(to bottom, rgb(240, 255, 172) 50%, rgb(80, 250, 95) 120px);
-    box-shadow: 0 10px #bcc56b;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.login-title-tile span {
-    /* Compresses letters vertically */
-    transform: scale(1,  calc(110 / 120));
-}
-
-
-
 /* Main game CSS */
 .Game {
     text-align: center;
-
     user-select: none;
-}
-
-.game-title {
-    display: flex;
-    justify-content: center;
 }
 
 .game-title-tile {
@@ -97,10 +50,11 @@
     padding: 12px 24px;
     border: none;
     border-radius: 8px;
-    width: 200px;
     box-shadow: 0 7px #bcc56b;
     cursor: pointer;
     transition: all 0.3s ease 0s;
+
+    width: 200px;
 }
 
 .gameButton:hover {
@@ -111,7 +65,7 @@
 
 .gameButton:active {
     background-color: #47ff56; /* Even darker green when the button is clicked */
-    box-shadow: 0 2px #22c24a; /* Flatter shadow when active */
+    box-shadow: 0 0px #22c24a; /* Flatter shadow when active */
     transform: translateY(7px); /* Pushed effect when clicked */
 }
 
@@ -125,30 +79,38 @@
 }
 
 .gameButton:active:disabled {
-    transform: none; /* Pushed effect when clicked */
+    transform: none;
 }
 
 .game-name-display {
     user-select: text;
+    color: #fff;
+    background-color: #19211d91;
+    padding: 10px;
+    margin-top: 10px;
+    margin-bottom: 5px;
 }
 
 /* CSS ror the Beast Mode button */
 .beastModeToggle {
-    color: black;
+    background: linear-gradient(to bottom, rgb(240, 255, 172) 50%, rgb(80, 250, 95) 120px);
+    color: rgb(0, 0, 0);
+    font-weight: bold;
     font-family: 'Fredoka One', sans-serif;
     font-size: 48px;
-
-    /* Tile borders */
+    border: none;
+    border-radius: 5px;
     width: 60px;
     height: 55px;
-    margin: 2px;
-    border-radius: 5px;
-    background: linear-gradient(to bottom, rgb(240, 255, 172) 50%, rgb(80, 250, 95) 120px);
     box-shadow: 0 5px #bcc56b;
 
+    margin: 2px;
     display: flex;
     align-items: center;
     justify-content: center;
+
+    cursor: pointer;
+    transition: all 0.3s ease 0s;
 }
 
 .beastModeToggle .beastModeLetter {
@@ -169,7 +131,7 @@
 .beastModeToggle:disabled {
     background: linear-gradient(to bottom, rgb(240, 255, 172) 50%, rgb(80, 250, 95) 120px);
     box-shadow: 0 5px #bcc56b;
-    color:black;
+    color: black;
 }
 
 .beastModeToggle:active:disabled {
@@ -177,28 +139,14 @@
 }
 
 /* For anything with the beastMode class after beastMode boolean is set to true */
-.beastMode {
-    background: rgb(192, 0, 0);
+.beastMode, .beastMode:disabled {
+    background: rgb(180, 0, 0);
     box-shadow: 0 5px rgb(140, 0, 0);;
     color: rgb(225, 225, 225);
 }
 
-.beastMode:hover {
-    background: rgb(192, 0, 0);
-}
-
-.beastMode:active {
-    background: rgb(192, 0, 0);
-}
-
-.beastMode:focus {
-    background: rgb(192, 0, 0);
-}
-
-.beastMode:disabled {
-    background: rgb(192, 0, 0);
-    box-shadow: 0 5px rgb(140, 0, 0);;
-    color: rgb(225, 225, 225);
+.beastMode:hover, .beastMode:active, .beastMode:focus {
+    background: rgb(180, 0, 0);
 }
 
 /* Separate CSS for game buttons affected by beastMode */
@@ -215,6 +163,9 @@
     box-shadow: 0 7px rgb(140, 0, 0);
     cursor: pointer;
     transition: all 0.3s ease 0s;
+
+    width: auto;
+    min-width: 200px;
 }
 
 .beastModeGameButton:hover {
@@ -239,12 +190,8 @@
 }
 
 .gameButton:active:disabled {
-    transform: none; /* Pushed effect when clicked */
+    transform: none;
 }
-
-
-
-
 
 /* Edited grid CSS */
 .grid {
@@ -257,7 +204,6 @@
     display: flex;
 }
 
-
 /* Board tiles CSS */
 .cell {
     width: 42px; /* Adjusted to fit a larger grid on the screen */
@@ -267,7 +213,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    background-color: rgba(229, 255, 0, 0);
+    background-color: rgb(0, 0, 0);
     color: rgb(255, 255, 255); /* Ensure letters are black on white background */
 
     padding-bottom: 3px;
@@ -310,6 +256,7 @@ input, select, button {
 
 .player-letters {
     color: white;
+    margin-bottom: 5px;
 }
 
 /* CSS for player tile-rack has to change at some point */
@@ -386,28 +333,6 @@ input, select, button {
     transform: translateY(3px)
 }
 
-button {
-    background-color: #007BFF; /* Blue background for the buttons */
-    color: white; /* White text for good contrast */
-    padding: 10px 20px; /* Padding around the text */
-    border: none; /* No border for a clean look */
-    border-radius: 5px; /* Rounded corners for a modern appearance */
-    cursor: pointer; /* Pointer cursor on hover */
-    transition: background-color 0.3s, transform 0.3s; /* Smooth transitions for interactive effects */
-    outline: none; /* Remove outline to keep the design clean */
-}
-
-button:hover, button:focus {
-    background-color: #0056b3; /* A darker shade of blue for hover and focus */
-    transform: scale(1.05); /* Slightly enlarge the button on hover or focus */
-}
-
-button:disabled {
-    background-color: #666; /* Grey background for disabled buttons */
-    color: #ccc; /* Light grey text to indicate the button is inactive */
-    cursor: not-allowed; /* Cursor indicates that the button is not interactable */
-}
-
 input[type="text"], select {
     width: calc(13%); /* Slightly less than full width to accommodate padding */
     padding: 12px 20px; /* Good padding for ease of interaction */
@@ -430,16 +355,31 @@ input[type="text"]:disabled, select:disabled {
     color: #d4d4d4; /* Grey text for disabled input to maintain clarity */
 }
 
-.game-name-display {
-    color: #fff; /* White color for visibility */
-    background-color: #333; /* Darker background for contrast */
-    padding: 10px; /* Padding for better spacing */
-    margin: 10px 0; /* Vertical margin for separation */
-    border-radius: 5px; /* Rounded corners */
-}
-
 .check-words-display {
     margin-top: 20px;
     font-size: 16px;
-    color: #4CAF50; /* Change color based on your design */
+    color: #4CAF50;
+}
+
+/* Singleplayer timer CSS */
+.timer-container {
+    padding: 10px;
+    background-color: #f0f0f0; /* Light grey background */
+    border: 2px solid #ccc; /* Grey border */
+    border-radius: 5px; /* Rounded corners */
+    display: inline-block;
+    margin: 10px;
+    font-size: 16px;
+    color: #333; /* Dark grey text for better readability */
+    font-family: Arial, sans-serif; /* Sets the font styling */
+}
+
+.timer-heading {
+    color: rgb(173, 173, 173); /* Slightly darker grey text for the heading */
+    margin-bottom: 5px; /* Spacing between heading and timer */
+}
+
+.timer-value {
+    font-weight: bold; /* Makes the timer's number bold */
+    color: rgb(61, 63, 49);
 }

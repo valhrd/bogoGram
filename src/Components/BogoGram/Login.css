@@ -1,0 +1,48 @@
+/*  Login screen CSS */
+.Login {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+    text-align: center; 
+    background: linear-gradient(to bottom, rgba(10,106,0,1) 10%, rgba(26,157,0,1) 39%, rgba(56,255,0,1) 100%);
+    user-select: none;
+}
+
+.login-title, .game-title {
+    display: flex;
+    justify-content: center;
+}
+
+.login-title-tile {
+    color: black;
+    font-family: 'Fredoka One', sans-serif;
+    font-size: 96px;
+
+    /* Tile borders */
+    width: 120px;
+    height: 110px;
+    margin: 5px;
+    border-radius: 10px;
+    background: linear-gradient(to bottom, rgb(240, 255, 172) 50%, rgb(80, 250, 95) 120px);
+    box-shadow: 0 10px #bcc56b;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transition: all 0.3s ease 0s;
+}
+
+.login-title-tile:hover {
+    background: linear-gradient(to bottom, rgb(240, 255, 172) 50%, rgb(80, 250, 95) 120px);
+    box-shadow: 0 0px #bcc56b;
+    transform: translateY(10px);
+    transition: all 0.3s ease 0s;
+}
+
+.login-title-tile span {
+    /* Compresses letters vertically */
+    transform: scale(1,  calc(110 / 120));
+}

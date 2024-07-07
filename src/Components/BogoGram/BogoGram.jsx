@@ -11,6 +11,7 @@ import Trie from './Trie'; //new 11 Jun
 // import dictionaryData from './dictionary.json';
 
 import { ref, onValue, set } from 'firebase/database';
+import './Login.css';
 import './BogoGram.css';
 
 // Tiles
@@ -699,7 +700,7 @@ function BogoGram() {
 
 
   return (
-    <div className="Game">
+    <div className={`Game ${beastMode ? "BeastModeBackground" : ""} Background`}>
       <h1 className="game-title">
         <button className={`beastModeToggle ${beastMode ? "beastMode" : ""}`} onClick={toggleBeastMode} disabled={startGameDisabled || gameName}>
           <span className="beastModeLetter">B</span>
@@ -715,10 +716,8 @@ function BogoGram() {
         <button className="gameButton" onClick={signOut}>Sign Out</button>
       )}
       <div>
-        <div className="startGameButtonContainer">
-          <button className={`${beastMode ? "beastModeGameButton" : ""} gameButton`} onClick={beastMode ? handleStartBeastGame : handleStartGame} disabled={startGameDisabled || gameName}>{beastMode ? "Start A Beast Game" : "Start Game"}</button>
-          {/* {<button className="game-title-tile beastModeToggle beastMode" onClick={toggleBeastMode} disabled={startGameDisabled || gameName}></button>} */}
-        </div>
+        <p className="game-name-display">{gameName ? `Current Game: ${gameName}` : "No game started"}</p>
+        <button className={`${beastMode ? "beastModeGameButton" : ""} gameButton`} onClick={beastMode ? handleStartBeastGame : handleStartGame} disabled={startGameDisabled || gameName}>{beastMode ? "Create A Beast Game" : "Create Game"}</button> 
         <div>
           <input
             type="text"
@@ -728,8 +727,10 @@ function BogoGram() {
           />
           <button className="gameButton" onClick={handleJoinGame}>Join Game</button>
         </div>
-        <button className="gameButton" onClick={handleDistributeButton} disabled={distributeButtonDisabled || tilesDistributed}>Distribute</button>
-        <p className="game-name-display">{gameName ? `Current Game: ${gameName}` : "No game started"}</p>
+        <div>
+          <button className="gameButton" onClick={handleDistributeButton} disabled={distributeButtonDisabled || tilesDistributed}>Start Game</button>
+        </div>
+        <p></p>
         <button className="gameButton" onClick={shuffleLetters}>Shuffle</button>
         <button className="gameButton" onClick={rebuildGrid} disabled={tPlayed.numberOfTilesPlayed === 0}>Rebuild</button>
         <button className="gameButton" onClick={handlePeelButton} disabled={peelButtonDisabled || !(tilesDistributed && !playerLetters.length) || !tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}>PEEL</button>
@@ -788,8 +789,15 @@ function BogoGram() {
         <button className="gameButton" onClick={handleBananasButton} disabled={bananasButtonDisabled || !(tilesDistributed && !playerLetters.length) || tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}>
           BANANAS!
         </button> 
-        {singlePlayer && <p>Timer: {timer} seconds</p>}
         {validationMessage && <p className="check-words-display">{validationMessage}</p>}
+      </div>
+      <div>
+        {true && (
+          <div className="timer-container">
+            <div className="timer-heading">Game Timer</div>
+            <div className="timer-value">{timer} seconds</div>
+          </div>
+        )}
       </div>
       <div className="grid">
         {grid.map((row, rowIndex) => (
