@@ -792,7 +792,7 @@ function BogoGram() {
         {validationMessage && <p className="check-words-display">{validationMessage}</p>}
       </div>
       <div>
-        {true && (
+        {singlePlayer && (
           <div className="timer-container">
             <div className="timer-heading">Game Timer</div>
             <div className="timer-value">{timer} seconds</div>
