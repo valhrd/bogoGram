@@ -148,4 +148,30 @@ input[type="cell"] {
     font-size: 16px;
     color: #4CAF50; /* Change color based on your design */
 }
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+
+.timer-container {
+    padding: 10px;
+    background-color: #f0f0f0; /* Light grey background */
+    border: 2px solid #ccc; /* Grey border */
+    border-radius: 5px; /* Rounded corners */
+    display: inline-block;
+    margin: 10px;
+    font-size: 16px;
+    color: #333; /* Dark grey text for better readability */
+    font-family: Arial, sans-serif; /* Sets the font styling */
+}
+
+.timer-heading {
+    color: rgb(173, 173, 173); /* Slightly darker grey text for the heading */
+    margin-bottom: 5px; /* Spacing between heading and timer */
+}
+
+.timer-value {
+    font-weight: bold; /* Makes the timer's number bold */
+    color: rgb(61, 63, 49);
+}
+
 >>>>>>> Stashed changes

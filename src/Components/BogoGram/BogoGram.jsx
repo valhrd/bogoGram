@@ -672,6 +672,7 @@ function BogoGram() {
         <button onClick={placeWord}>Place Word</button>
       </div>
       <div>
+<<<<<<< Updated upstream
         <input
             type="text"
             value={currDump}
@@ -681,7 +682,21 @@ function BogoGram() {
             className="dump-input"  // Apply custom class for styling
         />
         <button onClick={dump} disabled={currDump.length !== 1} className="dump-button">DUMP!</button>
+=======
+        <button className="gameButton" onClick={handleBananasButton} disabled={bananasButtonDisabled || !(tilesDistributed && !playerLetters.length) || tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}>
+          BANANAS!
+        </button> 
+        {validationMessage && <p className="check-words-display">{validationMessage}</p>}
+>>>>>>> Stashed changes
       </div>
+      <div>
+        {singlePlayer && (
+          <div className="timer-container">
+            <div className="timer-heading">Game Timer</div>
+            <div className="timer-value">{timer} seconds</div>
+          </div>
+        )}
+      </div> 
       <div className="grid">
         {grid.map((row, rowIndex) => (
           <div key={rowIndex} className="row">
