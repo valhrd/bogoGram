@@ -126,12 +126,14 @@ exports.createGame = functions.https.onCall(async (data, content) => {
     gameData.tiles0 = shuffleArray(letters0.split(""));
     gameData.tiles1 = shuffleArray(letters1.split(""));
     gameData.tiles2 = shuffleArray(letters2.split(""));
+    gameData.tilesDistributed = false;
   } else {
     const letters = "AAAABBBCCCDDDDEEEEEEEEEEEEEEEEEE" +
                     "FFFGGGGHHHIIIIIIIIIIIIJJKKLLLLLMMM" +
                     "NNNNNNNNOOOOOOOOOOOPPPQQRRRRRRRRR" +
                     "SSSSSSTTTTTTTTTUUUUUUVVVWWWXXYYYZZ";
     gameData.tiles = shuffleArray(letters.split(""));
+    gameData.tilesDistributed = false;
   }
 
   const gameDataRef = firestore.collection("gameData").doc(gameID);
@@ -151,6 +153,12 @@ exports.joinGame = functions.https.onCall(async (data, context) => {
     throw new Error("Game not found.");
   }
   const gameData = doc.data();
+  const gameStarted = gameData.tilesDistributed;
+  if (gameStarted) {
+    return {
+      message: "Game has already started",
+    };
+  }
   await gameDataRef.update({
     playerID: admin.firestore.FieldValue.arrayUnion(context.auth.uid),
   });
@@ -200,7 +208,7 @@ exports.distributeTiles = functions.https.onCall(async (data, context) => {
       tiles2: tiles2,
       tileDistribution: tileDistributions,
       tilesDistributed: true,
-      tileUpdates: {}, // Assuming you reset or manage tile updates elsewhere
+      tileUpdates: {},
     });
   } else {
     const tiles = gameData.tiles || [];

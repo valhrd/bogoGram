@@ -17,6 +17,9 @@ import './BogoGram.css';
 import Tile from './Tile';
 import TilesPlayed from './TilesPlayed';
 
+// Timer
+import useTimer from './useTimer';
+
 // Grid formation plus tilebag
 const gridSize = 35;
 const initialGrid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(''));
@@ -99,6 +102,10 @@ function BogoGram() {
 
   // beast mode
   const [beastMode, setBeastMode] = useState(false);
+
+  // singleplayer + timer
+  const [singlePlayer, setSinglePlayer] = useState(false);
+  const {timer, startTimer, stopTimer, resetTimer} = useTimer();
 
   // Additional booleans and delay time to disable buttons that should not be spammed
   // Buttons to disable: Start Game (may subject to change), Distribute, PEEL, DUMP, BANANAS!
@@ -245,6 +252,10 @@ function BogoGram() {
     const joinGame = httpsCallable(functions, 'joinGame');
     joinGame({ gameID: inputGameId.trim() }).then(result => {
       console.log(result.data.message);
+      if (result.data.message === "Game has already started") {
+        alert("The game has already started. Please join another one");
+        return;
+      }
       const res = inputGameId.trim();
       setGameNumber(res); // Set the current game ID to the one joined
       setGameName(result.data.beastMode ? "Beast Mode Game " + res : "Game " + res); // Adjust the game name based on the mode
@@ -286,6 +297,11 @@ function BogoGram() {
         return;
       }
       const data = docSnapshot.data();
+      // Check if it's a singleplayer game
+      if (data.playerID.length === 1 && data.tilesDistributed) {
+        setSinglePlayer(true);
+        startTimer();
+      }
       const updatesRef = doc(firestore, 'gameData', gameNumber);
       if (data.tileDistribution && data.tileDistribution[user.uid]) {
         if (!arraysEqual(data.tileDistribution[user.uid], playerLetters) && !tilesDistributed) {
@@ -300,6 +316,11 @@ function BogoGram() {
         if (!data.tilesInBag) {
           setTilesInBag(false);
         }
+        if (data.gameOver && singlePlayer) {
+          setGameOver(true);
+          setGameWinner(data.gameWinner);
+          alert('You have beat the game!');
+        }
         if (data.gameOver) {
           setGameOver(true);
           setGameWinner(data.gameWinner);
@@ -309,7 +330,10 @@ function BogoGram() {
     }, error => {
       console.error("Error listening to the game data:", error);
     });
-    return () => unsubscribe();  
+    return () => { 
+      unsubscribe();  
+      stopTimer();
+    }
   }, [gameNumber, user, firestore]);
 
   // helper function for array equality, reduces number of updates
@@ -469,25 +493,42 @@ function BogoGram() {
   
     if (!gameNumber || !user) return;
     const gameRef = doc(firestore, 'gameData', gameNumber);
-  
-    if (allValid) {
-      // Current player wins
-      console.log("You win!")
-      await updateDoc(gameRef, {
-        gameOver: true,
-        gameWinner: user.uid
-      });
-    } else {
-      // Randomly choose a winner among the players
-      console.log("You have invalid letters, somebody else will win :(");
-      const docSnapshot = await getDoc(gameRef);
-      const data = docSnapshot.data();
-      const randomWinner = data.playerID[Math.floor(Math.random() * data.playerID.length)];
-      console.log("Instead, the winner shall be: " + randomWinner);
-      await updateDoc(gameRef, {
-        gameOver: true,
-        gameWinner: randomWinner
-      });
+
+    const finalTime = stopTimer(); // Stop the timer (only really matters for Singleplayer)
+
+    if (singlePlayer) {
+      console.log(`You finished in ${finalTime} seconds!`);
+      if (allValid) {
+        await updateDoc(gameRef, {
+            gameOver: true,
+            gameWinner: user.uid,
+            finalTime: timer // Store the final time if needed
+        });
+      } else {
+        console.log("Invalid words detected. Please try again.");
+        startTimer(); // Optionally allow the player to correct their board and try ending the game again
+        }
+    }
+    else {
+      if (allValid) {
+        // Current player wins
+        console.log("You win!")
+        await updateDoc(gameRef, {
+          gameOver: true,
+          gameWinner: user.uid
+        });
+      } else {
+        // Randomly choose a winner among the players
+        console.log("You have invalid letters, somebody else will win :(");
+        const docSnapshot = await getDoc(gameRef);
+        const data = docSnapshot.data();
+        const randomWinner = data.playerID[Math.floor(Math.random() * data.playerID.length)];
+        console.log("Instead, the winner shall be: " + randomWinner);
+        await updateDoc(gameRef, {
+          gameOver: true,
+          gameWinner: randomWinner
+        });
+      }
     }
   };
   
@@ -745,6 +786,7 @@ function BogoGram() {
         <button className="gameButton" onClick={handleBananasButton} disabled={bananasButtonDisabled || !(tilesDistributed && !playerLetters.length) || tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}>
           BANANAS!
         </button> 
+        {singlePlayer && <p>Timer: {timer} seconds</p>}
         {validationMessage && <p className="check-words-display">{validationMessage}</p>}
       </div>
       <div className="grid">
