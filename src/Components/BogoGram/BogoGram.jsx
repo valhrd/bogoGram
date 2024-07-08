@@ -713,12 +713,18 @@ function BogoGram() {
     .catch(error => console.error('Error updating the database:', error));
   };
 
-  const toggleBeastMode = () => {
-    setBeastMode(!beastMode);
-  }
-
   // Just for convenience to make the game title
-  const gameTitle = ['B','O','G','O','G','R','A','M'];
+  const [gameTitle, setGameTitle] = useState('BOGOGRAM'.split(''));
+
+  const toggleBeastMode = () => {
+    const newBeastMode = !beastMode
+    setBeastMode(newBeastMode);
+    if (newBeastMode) {
+      setGameTitle('BEASTGRAM'.split(''));
+    } else {
+      setGameTitle('BOGOGRAM'.split(''));
+    }
+  }
 
   if (!user) {
     return (
