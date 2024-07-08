@@ -107,6 +107,9 @@ function BogoGram() {
   // singleplayer + timer
   const [singlePlayer, setSinglePlayer] = useState(false);
   const {timer, timeTaken, startTimer, stopTimer, resetTimer} = useTimer();
+  //leaderboard 
+  const [leaderboardTimings, setLeaderboardTimings] = useState([]);
+  const [playerRank, setPlayerRank] = useState(null);
 
   // Additional booleans and delay time to disable buttons that should not be spammed
   // Buttons to disable: Start Game (may subject to change), Distribute, PEEL, DUMP, BANANAS!
@@ -505,6 +508,7 @@ function BogoGram() {
             gameWinner: user.uid,
             finalTime: timer // Store the final time if needed
         });
+        stopTimer();
       } else {
         console.log("Invalid words detected. Please try again.");
         startTimer(); // Optionally allow the player to correct their board and try ending the game again
@@ -533,7 +537,41 @@ function BogoGram() {
     }
   };
   
+  // leaderboard stuff
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      if (!gameNumber || !user) return;
+      const docRef = doc(firestore, "leaderboard", "rankings");
+      const docSnap = await getDoc(docRef);
 
+      if (docSnap.exists()) {
+          setLeaderboardTimings(docSnap.data().timing);
+      } else {
+          console.log("No such document in leaderboard!");
+      }
+    };
+
+    fetchLeaderboard();
+  }, []);
+
+  const updateLeaderboard = async (newTiming) => {
+    const docRef = doc(firestore, "leaderboard", "rankings");
+    const docSnap = await getDoc(docRef);
+    let timings = docSnap.exists() ? docSnap.data().timing : [];
+
+    timings.push(newTiming);
+    timings.sort((a, b) => a - b);  // Sort timings in ascending order
+
+    const newRank = timings.indexOf(newTiming) + 1;  // Determine rank
+
+    await updateDoc(docRef, {
+        timing: timings
+    });
+
+    setLeaderboardTimings(timings);
+    setPlayerRank(newRank);
+  };
+  
   // Shuffle player rack
   const shuffleLetters = () => {
     const newLetters = playerLetters;
