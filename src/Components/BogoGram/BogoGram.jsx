@@ -106,7 +106,7 @@ function BogoGram() {
 
   // singleplayer + timer
   const [singlePlayer, setSinglePlayer] = useState(false);
-  const {timer, startTimer, stopTimer, resetTimer} = useTimer();
+  const {timer, timeTaken, startTimer, stopTimer, resetTimer} = useTimer();
 
   // Additional booleans and delay time to disable buttons that should not be spammed
   // Buttons to disable: Start Game (may subject to change), Distribute, PEEL, DUMP, BANANAS!
@@ -676,8 +676,7 @@ function BogoGram() {
   };
 
   const toggleBeastMode = () => {
-    const newBeastMode = !beastMode;
-    setBeastMode(newBeastMode);
+    setBeastMode(!beastMode);
   }
 
   // Just for convenience to make the game title
@@ -700,7 +699,7 @@ function BogoGram() {
 
 
   return (
-    <div className={`Game ${beastMode ? "BeastModeBackground" : ""} Background`}>
+    <div className={`Game`}>
       <h1 className="game-title">
         <button className={`beastModeToggle ${beastMode ? "beastMode" : ""}`} onClick={toggleBeastMode} disabled={startGameDisabled || gameName}>
           <span className="beastModeLetter">B</span>
@@ -792,10 +791,12 @@ function BogoGram() {
         {validationMessage && <p className="check-words-display">{validationMessage}</p>}
       </div>
       <div>
-        {singlePlayer && (
+        {true && (
           <div className="timer-container">
-            <div className="timer-heading">Game Timer</div>
-            <div className="timer-value">{timer} seconds</div>
+            <div className="timer-heading">Timer</div>
+            {timeTaken.split('').map((digit, index) => (
+              <span className={`${index % 3 === 2 ? "timer-unit" : ""} timer-tile board-tile`}>{digit}</span>
+            ))}
           </div>
         )}
       </div>
