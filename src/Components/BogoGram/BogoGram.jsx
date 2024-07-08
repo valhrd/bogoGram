@@ -100,6 +100,18 @@ function BogoGram() {
   const [gameOver, setGameOver] = useState(false);
   const [gameWinner, setGameWinner] = useState('');
 
+<<<<<<< Updated upstream
+=======
+  // beast mode
+  const [beastMode, setBeastMode] = useState(false);
+
+  // singleplayer + timer
+  const [singlePlayer, setSinglePlayer] = useState(false);
+  const {timer, startTimer, stopTimer, resetTimer} = useTimer();
+  //leaderboard 
+  const [leaderboardTimings, setLeaderboardTimings] = useState([]);
+  const [playerRank, setPlayerRank] = useState(null);
+>>>>>>> Stashed changes
 
   // Additional booleans and delay time to disable buttons that should not be spammed
   // Buttons to disable: Start Game (may subject to change), Distribute, PEEL, DUMP, BANANAS!
@@ -476,7 +488,176 @@ function BogoGram() {
     }).catch(error => {
         console.error('Error during dump operation:', error);
     });
+<<<<<<< Updated upstream
 }
+=======
+  }
+
+  
+  // word checker: for end of game, to check if all words are valid (local/react instead of server for latency and operational cost)
+  const checkWordsInGrid = (grid, dictionary) => {
+    const gridSize = grid.length;
+    let wordsToCheck = [];
+  
+    // Extract horizontal words and log them
+    for (let row = 0; row < gridSize; row++) {
+      const horizontalWords = extractWordsFromLine(grid[row]);
+      // console.log(`Horizontal words in row ${row}:`, horizontalWords);
+      wordsToCheck = wordsToCheck.concat(horizontalWords);
+    }
+  
+    // Extract vertical words and log them
+    for (let col = 0; col < gridSize; col++) {
+      let columnArray = [];
+      for (let row = 0; row < gridSize; row++) {
+        columnArray.push(grid[row][col]);
+      }
+      const verticalWords = extractWordsFromLine(columnArray);
+      // console.log(`Vertical words in column ${col}:`, verticalWords);
+      wordsToCheck = wordsToCheck.concat(verticalWords);
+    }
+  
+    // Logging all words found
+    console.log(wordsToCheck)
+
+    // Check all words using the Trie and log each check
+    return wordsToCheck.every(word => {
+      const isValid = dictionary.search(word);
+      console.log(`Checking word '${word}':`, isValid ? 'Valid' : 'Invalid');
+      return isValid;
+    });
+  };
+  
+  // Helper function to extract words from a line (array of letters)
+  
+  const extractWordsFromLine = (line) => {
+    // Convert the array of characters into a string
+  
+    // Function now returns a word array instead of a string
+    const words = [];
+    let word = '';
+
+    // If the current cell is not empty we append it to the string, once we meet an empty cell, depending on the
+    // length of the word, we add it to the list of words found along that row/column
+    for (let i = 0; i < gridSize; i++) {
+      if (line[i] !== '') {
+        word += line[i];
+      } else {
+        if (word.length >= 2) {
+          words.push(word);
+        }
+        word = '';
+      }
+    }
+
+    // For the final word in case the word touches the right or bottom edges of the board
+    if (word.length >= 2) {
+      words.push(word);
+    }
+
+    return words;
+  };
+  
+  
+  const handleCheckWords = () => {
+
+    if (!tPlayed.areAllTilesConnected()) {
+      setValidationMessage("You have unconnected tiles!");
+      setAllValid(false);
+      return;
+    }
+    if (dictionary && checkWordsInGrid(grid, dictionary)) {
+      console.log('All words valid');
+      setValidationMessage("All words are valid!");
+      setAllValid(true);
+    } else {
+      console.log('Invalid word(s) found');
+      setValidationMessage("You have invalid words!");
+      setAllValid(true);
+    }
+  };
+
+  const handleBananas = async () => {
+    
+    handleCheckWords(); // This sets `allValidWords`
+  
+    if (!gameNumber || !user) return;
+    const gameRef = doc(firestore, 'gameData', gameNumber);
+
+    const finalTime = stopTimer(); // Stop the timer (only really matters for Singleplayer)
+
+    if (singlePlayer) {
+      console.log(`You finished in ${finalTime} seconds!`);
+      if (allValid) {
+        await updateDoc(gameRef, {
+            gameOver: true,
+            gameWinner: user.uid,
+            finalTime: timer // Store the final time if needed
+        });
+        stopTimer();
+      } else {
+        console.log("Invalid words detected. Please try again.");
+        startTimer(); // Optionally allow the player to correct their board and try ending the game again
+        }
+    }
+    else {
+      if (allValid) {
+        // Current player wins
+        console.log("You win!")
+        await updateDoc(gameRef, {
+          gameOver: true,
+          gameWinner: user.uid
+        });
+      } else {
+        // Randomly choose a winner among the players
+        console.log("You have invalid letters, somebody else will win :(");
+        const docSnapshot = await getDoc(gameRef);
+        const data = docSnapshot.data();
+        const randomWinner = data.playerID[Math.floor(Math.random() * data.playerID.length)];
+        console.log("Instead, the winner shall be: " + randomWinner);
+        await updateDoc(gameRef, {
+          gameOver: true,
+          gameWinner: randomWinner
+        });
+      }
+    }
+  };
+  
+  // leaderboard stuff
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      if (!gameNumber || !user) return;
+      const docRef = doc(firestore, "leaderboard", "rankings");
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+          setLeaderboardTimings(docSnap.data().timing);
+      } else {
+          console.log("No such document in leaderboard!");
+      }
+    };
+
+    fetchLeaderboard();
+  }, []);
+
+  const updateLeaderboard = async (newTiming) => {
+    const docRef = doc(firestore, "leaderboard", "rankings");
+    const docSnap = await getDoc(docRef);
+    let timings = docSnap.exists() ? docSnap.data().timing : [];
+
+    timings.push(newTiming);
+    timings.sort((a, b) => a - b);  // Sort timings in ascending order
+
+    const newRank = timings.indexOf(newTiming) + 1;  // Determine rank
+
+    await updateDoc(docRef, {
+        timing: timings
+    });
+
+    setLeaderboardTimings(timings);
+    setPlayerRank(newRank);
+  };
+>>>>>>> Stashed changes
 
   // Shuffle player rack
   const shuffleLetters = () => {
@@ -691,10 +872,18 @@ function BogoGram() {
       </div>
       <div>
         {singlePlayer && (
+          <>
           <div className="timer-container">
             <div className="timer-heading">Game Timer</div>
             <div className="timer-value">{timer} seconds</div>
           </div>
+          {playerRank && (
+            <div className="leaderboard-container">
+                <div className="leaderboard-heading">Your Rank</div>
+                <div className="leaderboard-rank">{playerRank}</div>
+            </div>
+        )}
+        </>
         )}
       </div> 
       <div className="grid">

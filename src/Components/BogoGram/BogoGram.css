@@ -174,4 +174,25 @@ input[type="cell"] {
     color: rgb(61, 63, 49);
 }
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+.leaderboard-container {
+    padding: 10px;
+    margin-top: 20px;
+    background-color: #e0e0e03d;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.leaderboard-heading {
+    font-weight: bold;
+    color: rgb(61, 63, 49);;
+}
+
+.leaderboard-rank {
+    font-size: 18px;
+    color: rgb(61, 63, 49);;
+    font-weight: bold;
+}
 >>>>>>> Stashed changes

@@ -131,3 +131,20 @@ exports.dumpTile = functions.https.onCall(async (data, context) => {
   return {tiles: tilesToPlayer};
 });
 
+<<<<<<< Updated upstream
+=======
+/*
+exports.singleEnd = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("unauthenticated",
+        "The function must be called while authenticated.");
+  }
+  const leaderboardRef = admin.firestore().collection("leaderboard")
+  .doc("rankings");
+  const doc = await leaderboardRef.get();
+  if (!doc.exists) {
+    throw new Error("Game not found.");
+  }
+  const leaderboard = doc.data();
+*/
+>>>>>>> Stashed changes
