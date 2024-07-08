@@ -685,7 +685,7 @@ function BogoGram() {
       </div>
         <button id="button" className="doNotSpam" onClick={() => distributeLetters()} disabled={tilesDistributed}>Distribute</button>
         <p className="game-name-display">{gameName ? `Current Game: ${gameName}` : "No game started"}</p>
-        <button id="button" onClick={shuffleLetters}>Shuffle</button>
+        <button id="button" onClick={shuffleLetters} disabled={playerLetters.length <= 1}>Shuffle</button>
         <button id="button" onClick={rebuildGrid} disabled={tPlayed.numberOfTilesPlayed === 0}>Rebuild</button>
         <button id="button" onClick={peel} disabled={!(tilesDistributed && !playerLetters.length) || !tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}>PEEL</button>
       </div>

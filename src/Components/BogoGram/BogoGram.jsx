@@ -727,10 +727,10 @@ function BogoGram() {
           <button className="gameButton" onClick={handleJoinGame}>Join Game</button>
         </div>
         <div>
-          <button className="gameButton" onClick={handleDistributeButton} disabled={distributeButtonDisabled || tilesDistributed}>Start Game</button>
+          <button className="gameButton" onClick={handleDistributeButton} disabled={!gameName || distributeButtonDisabled || tilesDistributed}>Start Game</button>
         </div>
         <p></p>
-        <button className="gameButton" onClick={shuffleLetters}>Shuffle</button>
+        <button className="gameButton" onClick={shuffleLetters} disabled={playerLetters.length <= 1}>Shuffle</button>
         <button className="gameButton" onClick={rebuildGrid} disabled={tPlayed.numberOfTilesPlayed === 0}>Rebuild</button>
         <button className="gameButton" onClick={handlePeelButton} disabled={peelButtonDisabled || !(tilesDistributed && !playerLetters.length) || !tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}>PEEL</button>
       </div>

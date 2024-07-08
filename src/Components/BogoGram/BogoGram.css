@@ -67,9 +67,9 @@
 }
 
 .gameButton:active {
-    background-color: #47ff56; /* Even darker green when the button is clicked */
-    box-shadow: 0 0px #22c24a; /* Flatter shadow when active */
-    transform: translateY(7px); /* Pushed effect when clicked */
+    background-color: #47ff56;
+    box-shadow: 0 0px #22c24a;
+    transform: translateY(7px);
 }
 
 .gameButton:focus {
@@ -78,11 +78,9 @@
 
 .gameButton:disabled {
     background-color: rgb(173, 173, 173);
-    box-shadow: 0 7px #505050; /* Flatter shadow when active */
-}
-
-.gameButton:active:disabled {
-    transform: none;
+    box-shadow: 0 0px #505050;
+    transform: translateY(7px);
+    color: rgb(225, 225, 225);
 }
 
 .game-name-display {
@@ -188,13 +186,10 @@
     background-color: rgb(140, 0, 0);
 }
 
-.gameButton:disabled {
+.beastModeGameButton:disabled {
     background-color: rgb(173, 173, 173);
-    box-shadow: 0 7px #505050; /* Flatter shadow when active */
-}
-
-.gameButton:active:disabled {
-    transform: none;
+    box-shadow: 0 0px #505050;
+    transform: translateY(7px);
 }
 
 /* Edited grid CSS */
