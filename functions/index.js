@@ -14,6 +14,35 @@ const admin = require("firebase-admin");
 admin.initializeApp();
 const firestore = admin.firestore();
 
+<<<<<<< Updated upstream
+=======
+const adjectives = ["Affectionate", "Majestic", "Playful", "Graceful", "Loyal",
+  "Intelligent", "Gentle", "Energetic", "Vibrant", "Friendly", "Brave",
+  "Cheerful", "Curious", "Loving", "Noble", "Quick", "Speedy", "Sneaky"];
+const colours = ["Red", "Blue", "Green", "Yellow", "Pink", "Orange", "Brown",
+  "Purple", "White", "Black", "Violet", "Aquamarine", "Magenta", "Maroon",
+  "Silver"];
+const animals = ["Dog", "Cat", "Elephant", "Lion", "Tiger", "Giraffe", "Bear",
+  "Dolphin", "Horse", "Penguin", "Monkey", "Kangaroo", "Zebra", "Rabbit",
+  "Panda", "Snake", "Mouse", "Pig", "Dragon", "Deer", "Unicorn", "Chicken",
+  "Cow", "Koala", "Emu", "Crow", "Raven", "Turkey", "Kingfisher", "Hummingbird",
+  "Whale", "Shark", "Eel", "Mudskipper", "Stingray", "Seahorse", "Dolphin",
+  "Crab", "Lobster", "Crayfish", "Guppy", "Tuna", "Salmon", "Eagle",
+  "Panther", "Leopard", "Hawk", "Cod", "Swordfish", "Rhino", "Sardines",
+  "Wolf", "Turtle", "Capybara", "Frog", "Slug", "Sloth", "Goat", "Hamster"];
+// 15930 possibilities
+
+/**
+ * Randomly generates a gameID from the adjectives, colours and animals above
+ * @return {String} a gameID
+ */
+function generateGameId() {
+  const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+  const color = colours[Math.floor(Math.random() * colours.length)];
+  const animal = animals[Math.floor(Math.random() * animals.length)];
+  return `${adjective}${color}${animal}`;
+}
+>>>>>>> Stashed changes
 /**
  * Shuffles the elements of an array using the Fisher-Yates shuffle algorithm.
  *
