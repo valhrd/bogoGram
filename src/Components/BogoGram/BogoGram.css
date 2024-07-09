@@ -375,7 +375,7 @@ input[type="text"]:disabled, select:disabled {
     font-size: 20px;
     color: #ffffff;
     font-family: monospace;
-    position: absolute;
+    position: fixed;
     top: 15px;
     right: 17px;
 }
@@ -402,15 +402,17 @@ input[type="text"]:disabled, select:disabled {
 }
 
 .player-count-display {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    background-color: #f8f8f8;
-    border: 1px solid #ccc;
     padding: 10px;
+    background-color: #000000;
+    border: 2px solid #ccc;
     border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    font-size: 16px;
-    color: #333;
-  }
+    display: inline-block;
+    margin: 10px;
+    font-size: 20px;
+    color: #ffffff;
+    font-family: monospace;
+    position: fixed;
+    top: 15px;
+    left: 17px;
+}
   
