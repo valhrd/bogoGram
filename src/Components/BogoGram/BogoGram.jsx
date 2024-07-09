@@ -121,7 +121,11 @@ function BogoGram() {
   const [peelButtonDisabled, setPeelButtonDisabled] = useState(false);
   const [dumpButtonDisabled, setDumpButtonDisabled] = useState(false);
   const [bananasButtonDisabled, setBananasButtonDisabled] = useState(false);
+<<<<<<< Updated upstream
   const cooldown = 5000;
+=======
+  const cooldown = 4000;
+>>>>>>> Stashed changes
   
   // Try to "abstract"  since the structure is all the same
   const buttonTimeOut = (disablingFunction) => {
@@ -197,6 +201,20 @@ function BogoGram() {
   };
 
 
+<<<<<<< Updated upstream
+=======
+  // state updates for dictionary checking using Trie
+  useEffect(() => {
+    if (!dictionary) { //new on 11 jun
+      fetch('/dictionary.json')  
+        .then(response => response.json())
+        .then(data => {
+          const loadedDictionary = Trie.deserialize(JSON.stringify(data));
+          setDictionary(loadedDictionary);
+        })
+        .catch(error => console.error('Failed to load dictionary:', error));
+    }
+>>>>>>> Stashed changes
 
   useEffect(() => {
     const gridRef = ref(database, 'grid');
@@ -578,9 +596,7 @@ function BogoGram() {
   };
 
   const handleBananas = async () => {
-    
     handleCheckWords(); // This sets `allValidWords`
-  
     if (!gameNumber || !user) return;
     const gameRef = doc(firestore, 'gameData', gameNumber);
 
@@ -592,12 +608,17 @@ function BogoGram() {
         await updateDoc(gameRef, {
             gameOver: true,
             gameWinner: user.uid,
-            finalTime: timer // Store the final time if needed
+            finalTime: timer 
         });
         stopTimer();
       } else {
         console.log("Invalid words detected. Please try again.");
-        startTimer(); // Optionally allow the player to correct their board and try ending the game again
+        startTimer();
+        /*await updateDoc(gameRef, { //temporary, just for testing
+          gameOver: true,
+          gameWinner: user.uid,
+          finalTime: timer 
+      });*/
         }
     }
     else {
@@ -649,7 +670,7 @@ function BogoGram() {
     timings.sort((a, b) => a - b);  // Sort timings in ascending order
 
     const newRank = timings.indexOf(newTiming) + 1;  // Determine rank
-
+    alert("Your rank is: "+ newRank);
     await updateDoc(docRef, {
         timing: timings
     });
