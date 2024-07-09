@@ -445,8 +445,6 @@ function BogoGram() {
   // Helper function to extract words from a line (array of letters)
   
   const extractWordsFromLine = (line) => {
-    // Convert the array of characters into a string
-  
     // Function now returns a word array instead of a string
     const words = [];
     let word = '';
