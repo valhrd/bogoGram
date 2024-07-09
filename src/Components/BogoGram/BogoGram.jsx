@@ -392,7 +392,12 @@ function BogoGram() {
     const dumpTile = httpsCallable(functions, 'dumpTile');
     dumpTile({ gameID: gameNumber, tile: dumpRack[0] }).then((result) => {
         const newTiles = result.data.tiles;
-        if (newTiles.includes("*")) {
+        if (result.data.status === "Tile given to another player") {
+          console.log('Your dumped tile was given to another player.');
+          setDumpRack(prevDumpRack => {
+            return [];
+        });
+        } else if (newTiles.includes("*")) {
             setTilesInBag(false);
             alert("No more tiles in the bag!");
         } else {

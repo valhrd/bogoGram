@@ -17,7 +17,8 @@ const adjectives = ["Affectionate", "Majestic", "Playful", "Graceful", "Loyal",
   "Intelligent", "Gentle", "Energetic", "Vibrant", "Friendly", "Brave",
   "Cheerful", "Curious", "Loving", "Noble", "Quick", "Speedy", "Sneaky"];
 const colours = ["Red", "Blue", "Green", "Yellow", "Pink", "Orange", "Brown",
-  "Purple", "White", "Black"];
+  "Purple", "White", "Black", "Violet", "Aquamarine", "Magenta", "Maroon",
+  "Silver"];
 const animals = ["Dog", "Cat", "Elephant", "Lion", "Tiger", "Giraffe", "Bear",
   "Dolphin", "Horse", "Penguin", "Monkey", "Kangaroo", "Zebra", "Rabbit",
   "Panda", "Snake", "Mouse", "Pig", "Dragon", "Deer", "Unicorn", "Chicken",
@@ -26,7 +27,7 @@ const animals = ["Dog", "Cat", "Elephant", "Lion", "Tiger", "Giraffe", "Bear",
   "Crab", "Lobster", "Crayfish", "Guppy", "Tuna", "Salmon", "Eagle",
   "Panther", "Leopard", "Hawk", "Cod", "Swordfish", "Rhino", "Sardines",
   "Wolf", "Turtle", "Capybara", "Frog", "Slug", "Sloth", "Goat", "Hamster"];
-// 10620 possibilities
+// 15930 possibilities
 
 /**
  * Randomly generates a gameID from the adjectives, colours and animals above
@@ -330,43 +331,59 @@ exports.dumpTile = functions.https.onCall(async (data, context) => {
   const dumpedTile = data.tile.toUpperCase();
 
   if (gameData.beastMode) {
-    // Handle beast mode tile categorization
-    const tiles0 = gameData.tiles0 || [];
-    const tiles1 = gameData.tiles1 || [];
-    const tiles2 = gameData.tiles2 || [];
+    const coin = Math.floor(Math.random() * 2);
+    if (playerIDs.length === 1 || coin) {
+      const tiles0 = gameData.tiles0 || [];
+      const tiles1 = gameData.tiles1 || [];
+      const tiles2 = gameData.tiles2 || [];
 
-    if ("AEIOULNSRT".includes(dumpedTile)) {
-      tiles0.push(dumpedTile);
-    } else if ("DGBCMP".includes(dumpedTile)) {
-      tiles1.push(dumpedTile);
-    } else if ("FHVWXYZJKQ".includes(dumpedTile)) {
-      tiles2.push(dumpedTile);
-    } else {
-      console.error("Dumped tile does not match any category:", dumpedTile);
-    }
-
-    serverTiles = [tiles0, tiles1, tiles2];
-    const tilesToPlayer = [];
-
-    // Return 5 tiles starting from the lower value arrays
-    for (let i = 0; i < 5; i++) {
-      for (const tiles of serverTiles) {
-        if (tiles.length > 0) {
-          tilesToPlayer.push(tiles.shift());
-          if (tilesToPlayer.length === 5) break;
-        }
+      if ("AEIOULNSRT".includes(dumpedTile)) {
+        tiles0.push(dumpedTile);
+      } else if ("DGBCMP".includes(dumpedTile)) {
+        tiles1.push(dumpedTile);
+      } else if ("FHVWXYZJKQ".includes(dumpedTile)) {
+        tiles2.push(dumpedTile);
+      } else {
+        console.error("Dumped tile does not match any category:", dumpedTile);
       }
-      if (tilesToPlayer.length === 5) break;
+
+      serverTiles = [tiles0, tiles1, tiles2];
+      const tilesToPlayer = [];
+
+      // Return 5 tiles starting from the lower value arrays
+      for (let i = 0; i < 5; i++) {
+        for (const tiles of serverTiles) {
+          if (tiles.length > 0) {
+            tilesToPlayer.push(tiles.shift());
+            if (tilesToPlayer.length === 5) break;
+          }
+        }
+        if (tilesToPlayer.length === 5) break;
+      }
+
+      await gameDataRef.update({
+        tiles0: tiles0,
+        tiles1: tiles1,
+        tiles2: tiles2,
+        tilesInBag: tiles0.length > 0 || tiles1.length > 0 || tiles2.length > 0,
+      });
+
+      return {tiles: tilesToPlayer};
+    } else {
+      const otherPlayerIDs = playerIDs.filter((id) => id !== context.auth.uid);
+      const randomPlayerIndex = Math.floor(Math.random() *
+      otherPlayerIDs.length);
+      const randomPlayerID = otherPlayerIDs[randomPlayerIndex];
+      const tileUpdates = gameData.tileUpdates || {};
+      if (!tileUpdates[randomPlayerID]) {
+        tileUpdates[randomPlayerID] = [];
+      }
+      tileUpdates[randomPlayerID].push(dumpedTile);
+      await gameDataRef.update({
+        tileUpdates: tileUpdates,
+      });
+      return {status: "Tile given to another player"};
     }
-
-    await gameDataRef.update({
-      tiles0: tiles0,
-      tiles1: tiles1,
-      tiles2: tiles2,
-      tilesInBag: tiles0.length > 0 || tiles1.length > 0 || tiles2.length > 0,
-    });
-
-    return {tiles: tilesToPlayer};
   } else {
     // Normal gameplay logic
     if (serverTiles.length < 3) {
