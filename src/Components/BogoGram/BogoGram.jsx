@@ -111,6 +111,9 @@ function BogoGram() {
   const [leaderboardTimings, setLeaderboardTimings] = useState([]);
   const [playerRank, setPlayerRank] = useState(null);
 
+  // for displaying player count
+  const [playerCount, setPlayerCount] = useState(0);
+
   // Additional booleans and delay time to disable buttons that should not be spammed
   // Buttons to disable: Start Game (may subject to change), Distribute, PEEL, DUMP, BANANAS!
   // Value of delay is also subject to change
@@ -307,6 +310,9 @@ function BogoGram() {
         startTimer();
       }
       const updatesRef = doc(firestore, 'gameData', gameNumber);
+      if (data.playerID) {
+        setPlayerCount(data.playerID.length); // Update player count based on the array length
+      }  
       if (data.tileDistribution && data.tileDistribution[user.uid]) {
         if (!arraysEqual(data.tileDistribution[user.uid], playerLetters) && !tilesDistributed) {
           setPlayerLetters(data.tileDistribution[user.uid]); 
@@ -325,7 +331,7 @@ function BogoGram() {
           setGameWinner(data.gameWinner);
           alert('You have beat the game!');
         }
-        if (data.gameOver) {
+        if (data.gameOver && !singlePlayer) {
           setGameOver(true);
           setGameWinner(data.gameWinner);
           alert(data.gameWinner === user.uid ? "By some lottery, you have won the game!" : "Game over! Boo hoo.");
@@ -492,24 +498,29 @@ function BogoGram() {
   const handleBananas = async () => {
     
     handleCheckWords(); // This sets `allValidWords`
-  
     if (!gameNumber || !user) return;
     const gameRef = doc(firestore, 'gameData', gameNumber);
-
     const finalTime = stopTimer(); // Stop the timer (only really matters for Singleplayer)
-
     if (singlePlayer) {
       console.log(`You finished in ${finalTime} seconds!`);
       if (allValid) {
-        await updateDoc(gameRef, {
-            gameOver: true,
-            gameWinner: user.uid,
-            finalTime: timer // Store the final time if needed
+        const updateLeaderboard = httpsCallable(getFunctions(), 'updateLeaderboard');
+        updateLeaderboard({ finalTime }).then((result) => {
+            console.log(result.data.message); // Log the position returned by the function
+            // Mark the game as over with the final time and winner
+            updateDoc(gameRef, {
+                gameOver: true,
+                gameWinner: user.uid,
+                finalTime: finalTime 
+            });
+            alert(result.data.message);
+        }).catch((error) => {
+            console.error('Error updating leaderboard:', error);
+            alert("Failed to update leaderboard: " + error.message);
         });
-        stopTimer();
       } else {
         console.log("Invalid words detected. Please try again.");
-        startTimer(); // Optionally allow the player to correct their board and try ending the game again
+        startTimer(); 
         }
     }
     else {
@@ -756,6 +767,9 @@ function BogoGram() {
       {user && (
         <button className="gameButton" onClick={signOut}>Sign Out</button>
       )}
+      <div className="player-count-display">
+        Players: {playerCount}
+      </div>
       <div>
         <p className="game-name-display">{gameName ? `Current Game: ${gameName}` : "No game started"}</p>
         <button className={`${beastMode ? "beastModeGameButton" : ""} gameButton`} onClick={beastMode ? handleStartBeastGame : handleStartGame} disabled={startGameDisabled || gameName}>{beastMode ? "Create A Beast Game" : "Create Game"}</button> 

@@ -132,6 +132,8 @@ exports.createGame = functions.https.onCall(async (data, content) => {
                     "FFFGGGGHHHIIIIIIIIIIIIJJKKLLLLLMMM" +
                     "NNNNNNNNOOOOOOOOOOOPPPQQRRRRRRRRR" +
                     "SSSSSSTTTTTTTTTUUUUUUVVVWWWXXYYYZZ";
+    // for testing
+    // const letters = "FISHYELLOWCRABONEMOREAPPLE";
     gameData.tiles = shuffleArray(letters.split(""));
     gameData.tilesDistributed = false;
   }
@@ -391,4 +393,29 @@ exports.dumpTile = functions.https.onCall(async (data, context) => {
   }
 });
 
+exports.updateLeaderboard = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("unauthenticated",
+        "The function must be called while authenticated.");
+  }
+
+  const {finalTime} = data;
+  const leaderboardRef = admin.firestore()
+      .collection("leaderboard").doc("rankings");
+
+  try {
+    const leaderboardDoc = await leaderboardRef.get();
+    const timings = leaderboardDoc.exists ? leaderboardDoc.data().timing : [];
+    timings.push(finalTime);
+    timings.sort((a, b) => a - b);
+    await leaderboardRef.set({timing: timings}, {merge: true});
+    const position = timings.indexOf(finalTime) + 1;
+    return {position: position, message: `You are currently 
+      ${position} on the leaderboard!`};
+  } catch (error) {
+    console.error("Failed to update leaderboard:", error);
+    throw new functions.https.HttpsError("internal",
+        "Unable to update leaderboard.");
+  }
+});
 
