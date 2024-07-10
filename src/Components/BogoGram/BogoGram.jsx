@@ -641,7 +641,7 @@ function BogoGram() {
 
     depthSearch(letterCount, [], root);
     console.log(words);
-    return words[Math.floor(Math.random() * words.length + 1)];
+    return words[Math.floor(Math.random() * words.length)];
   }
 
   
