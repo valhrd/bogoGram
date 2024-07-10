@@ -18,6 +18,9 @@ import './BogoGram.css';
 import Tile from './Tile';
 import TilesPlayed from './TilesPlayed';
 
+// Buttons
+import GameButton from './GameButton';
+
 // Timer
 import useTimer from './useTimer';
 
@@ -126,7 +129,7 @@ function BogoGram() {
   const [bananasButtonDisabled, setBananasButtonDisabled] = useState(false);
   const cooldown = 7000;
   
-  // Try to "abstract"  since the structure is all the same
+  // Try to "abstract" since the structure is all the same
   const buttonTimeOut = (disablingFunction) => {
     setTimeout(disablingFunction, cooldown);
   }
@@ -588,56 +591,68 @@ function BogoGram() {
     setLeaderboardTimings(timings);
     setPlayerRank(newRank);
   }; */
-  
-  //for hints
-  function shuffleTiles(tiles) {
-    return tiles.sort(() => 0.5 - Math.random());
-  }
-  function* generateCombinations(tiles) {
-    const maxLength = Math.min(tiles.length, 6); // limit to len 6 for computational reasons
-    for (let size = 2; size <= maxLength; size++) {
-        yield* combine(tiles, size);
-    }
-  }
-  function* combine(tiles, size, start = 0, initialCombo = []) {
-    if (initialCombo.length === size) {
-        yield initialCombo;
-        return;
-    }
-    for (let i = start; i < tiles.length; i++) {
-        yield* combine(tiles, size, i + 1, initialCombo.concat(tiles[i]));
-    }
-  }
-  function findValidWord(playerLetters, dictionary, maxAttempts = 10) {
-    let attempt = 0;
-    while (attempt < maxAttempts) {
-        const shuffled = shuffleTiles([...playerLetters]); // Clone and shuffle
-        for (let combo of generateCombinations(shuffled)) {
-            const word = combo.join('');
-            if (dictionary.search(word)) {
-                console.log(`Valid word found: ${word}`);
-                return word;
-            }
-        }
-        attempt++;
-    }
-    return null;
-}
+
+  // For hints
   const handleGetHint = () => {
-    const word = findValidWord(playerLetters, dictionary);
+    //const word = findValidWord(playerLetters, dictionary);
+    const shuffled = shuffleTiles([...playerLetters]);
+    const word = findWord(shuffled, dictionary.root);
     const newNum = numHints - 1;
-    setNumHints(newNum);
     if (word) {
         setValidationMessage(`Hint: Try the word '${word}'!`);
+        setNumHints(newNum);
     } else {
         setValidationMessage("Couldn't find a valid word. Try again or use DUMP! to change tiles.");
     }
   };
 
+  const findWord = (letters, root) => {
+    const words = [];
+    const letterCount = {};
+    letters.forEach((item) => {letterCount[item] = (letterCount[item] || 0) + 1});
+
+    const depthSearch = (letterCount, path, curr, minLength = 2, depth = 6, maxWords = 50) => {
+
+      if (words.length === maxWords) {
+        return;
+      }
+
+      if (depth === 0) {
+        if (curr.isEndOfWord) {
+          words.push(path.join(''));
+        }
+        return;
+      }
+
+      if (curr.isEndOfWord && path.length >= minLength) {
+        words.push(path.join(''));
+      }
+
+      for (const letter in letterCount) {
+        if (letterCount[letter] > 0 && curr.children[letter]) {
+          letterCount[letter]--;
+          path.push(letter);
+          depthSearch(letterCount, path, curr.children[letter], minLength, depth - 1);
+          letterCount[letter]++;
+          path.pop();
+        } 
+      }
+    }
+
+    depthSearch(letterCount, [], root);
+    console.log(words);
+    return words[Math.floor(Math.random() * words.length + 1)];
+  }
+
+  
+  
   // Shuffle player rack
+  const shuffleTiles = (tiles) => {
+    return tiles.sort(() => 0.5 - Math.random());
+  }
+
   const shuffleLetters = () => {
-    const newLetters = playerLetters;
-    newLetters.sort((firstLetter, secondLetter) => 0.5 - Math.random());
+    const newLetters = shuffleTiles([...playerLetters]);
     set(ref(database, 'playerLetters'), newLetters)
       .then(() => {
         setPlayerLetters(newLetters);
@@ -825,7 +840,13 @@ function BogoGram() {
       </div>
       <div>
         <p className="game-name-display">{gameName ? `Current Game: ${gameName}` : "No game started"}</p>
-        <button className={`${beastMode ? "beastModeGameButton" : ""} gameButton`} onClick={beastMode ? handleStartBeastGame : handleStartGame} disabled={startGameDisabled || gameName}>{beastMode ? "Create A Beast Game" : "Create Game"}</button> 
+        <GameButton
+          name={beastMode ? "Create A Beast Game" : "Create Game"}
+          className={`${beastMode ? "beastModeGameButton" : ""}`}
+          desc={beastMode ? "Beast Mode ON!" : "Generates a game ID and creates a game"}
+          onClick={beastMode ? handleStartBeastGame : handleStartGame}
+          disabled={startGameDisabled || gameName}
+        />
         <div>
           <input
             type="text"
@@ -833,16 +854,47 @@ function BogoGram() {
             onChange={(e) => setInputGameId(e.target.value)}
             placeholder="Enter Game ID"
           />
-          <button className="gameButton" onClick={handleJoinGame}>Join Game</button>
+          <GameButton
+            name="Join Game"
+            desc="Joins a game using an existing game ID"
+            onClick={handleJoinGame}
+          />
         </div>
         <div>
-          <button className="gameButton" onClick={handleDistributeButton} disabled={!gameName || distributeButtonDisabled || tilesDistributed}>Start Game</button>
+          <GameButton
+            name="Start Game"
+            desc="This distributes the tiles"
+            onClick={handleDistributeButton}
+            disabled={!gameName || distributeButtonDisabled || tilesDistributed}
+          />
         </div>
         <p></p>
-        <button className="gameButton" onClick={handleGetHint} disabled={numHints <= 1}> Get a hint</button>
-        <button className="gameButton" onClick={shuffleLetters} disabled={playerLetters.length <= 1}>Shuffle</button>
-        <button className="gameButton" onClick={rebuildGrid} disabled={tPlayed.numberOfTilesPlayed === 0}>Rebuild</button>
-        <button className="gameButton" onClick={handlePeelButton} disabled={peelButtonDisabled || !(tilesDistributed && !playerLetters.length) || !tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}>PEEL</button>
+        <div>
+          <GameButton
+            name="HINT"
+            desc={`Number of hints remaining: ${numHints}`}
+            onClick={handleGetHint}
+            disabled={!tilesDistributed || (playerLetters.length < 2) || gameOver || numHints <= 1}
+          />
+          <GameButton
+            name="SHUFFLE"
+            desc="Mixes your player rack"
+            onClick={shuffleLetters}
+            disabled={playerLetters.length <= 1}
+          />
+          <GameButton
+            name="REBUILD"
+            desc="Recalls all your tiles back to the player rack"
+            onClick={rebuildGrid}
+            disabled={tPlayed.numberOfTilesPlayed === 0}
+          />
+          <GameButton
+            name="PEEL"
+            desc="Draw 1 tile from the bag for everyone including yourself"
+            onClick={handlePeelButton}
+            disabled={peelButtonDisabled || !(tilesDistributed && !playerLetters.length) || !tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}
+          />
+        </div>
       </div>
       <div>
         <h2 className="player-letters">Player Letters</h2>
@@ -891,13 +943,21 @@ function BogoGram() {
               />
             ))}
           </div>
-        </div> 
-        <button className="gameButton" onClick={handleDumpButton} disabled={dumpButtonDisabled || dumpRack.length !== 1}>DUMP!</button>
+        </div>
+        <GameButton
+          name="DUMP"
+          desc={`${beastMode ? "Dump 1 tile for a chance of getting 5 back" : "Dump 1 tile back into the bag and get 3 in return"}`}
+          onClick={handleDumpButton}
+          disabled={dumpButtonDisabled || dumpRack.length !== 1}
+        />
       </div>
       <div>
-        <button className="gameButton" onClick={handleBananasButton} disabled={bananasButtonDisabled || !(tilesDistributed && !playerLetters.length) || tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}>
-          BANANAS!
-        </button> 
+        <GameButton
+          name="BANANAS!"
+          desc="End the game right now"
+          onClick={handleBananasButton}
+          disabled={bananasButtonDisabled || !(tilesDistributed && !playerLetters.length) || tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}
+        />
         {validationMessage && <p className="check-words-display">{validationMessage}</p>}
       </div>
       <div>

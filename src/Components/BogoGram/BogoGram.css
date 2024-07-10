@@ -66,6 +66,28 @@
     transform: translateY(0px); /* Slight raise effect on hover */
 }
 
+.description {
+    padding: 10px;
+    background-color: #000000;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    display: inline-block;
+    margin: 10px;
+    font-size: 20px;
+    color: #ffffff;
+    font-family: monospace;
+    max-width: 300px;
+    text-align: right;
+    position: fixed;
+    top: 210px;
+    right: -400px;
+    transition: right 0.2s ease;
+}
+
+.description.show {
+    right: 17px;
+}
+
 .gameButton:active {
     background-color: #47ff56;
     box-shadow: 0 0px #22c24a;
@@ -411,8 +433,7 @@ input[type="text"]:disabled, select:disabled {
     font-size: 20px;
     color: #ffffff;
     font-family: monospace;
-    position: fixed;
+    position: absolute;
     top: 15px;
     left: 17px;
 }
-  
