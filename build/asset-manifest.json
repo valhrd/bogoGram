@@ -5,6 +5,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     "main.css": "/static/css/main.4f8a8326.css",
     "main.js": "/static/js/main.7f72cdea.js",
     "static/js/453.1d9a75e6.chunk.js": "/static/js/453.1d9a75e6.chunk.js",
@@ -95,6 +96,19 @@
   "entrypoints": [
     "static/css/main.70628d46.css",
     "static/js/main.21cfaaef.js"
+>>>>>>> Stashed changes
+=======
+    "main.css": "/static/css/main.08461935.css",
+    "main.js": "/static/js/main.b2d56f3d.js",
+    "static/js/453.1d9a75e6.chunk.js": "/static/js/453.1d9a75e6.chunk.js",
+    "index.html": "/index.html",
+    "main.08461935.css.map": "/static/css/main.08461935.css.map",
+    "main.b2d56f3d.js.map": "/static/js/main.b2d56f3d.js.map",
+    "453.1d9a75e6.chunk.js.map": "/static/js/453.1d9a75e6.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.08461935.css",
+    "static/js/main.b2d56f3d.js"
 >>>>>>> Stashed changes
   ]
 }
