@@ -113,6 +113,8 @@ function BogoGram() {
 
   // for displaying player count
   const [playerCount, setPlayerCount] = useState(0);
+  // for limiting number of hints
+  const [numHints, setNumHints] = useState(0);
 
   // Additional booleans and delay time to disable buttons that should not be spammed
   // Buttons to disable: Start Game (may subject to change), Distribute, PEEL, DUMP, BANANAS!
@@ -242,6 +244,7 @@ function BogoGram() {
       console.log('New Game Created with ID: ', result.data.gameID);
       setGameNumber(result.data.gameID);
       setGameName(`${isBeastMode ? "Beast Mode" : ""} Game ` + result.data.gameID);
+      setNumHints(10);
       setAllValid(false);
       setBeastMode(isBeastMode);
     }).catch(error => {
@@ -552,7 +555,7 @@ function BogoGram() {
   };
   
   // leaderboard stuff
-  useEffect(() => {
+  /* useEffect(() => {
     const fetchLeaderboard = async () => {
       if (!gameNumber || !user) return;
       const docRef = doc(firestore, "leaderboard", "rankings");
@@ -584,8 +587,53 @@ function BogoGram() {
 
     setLeaderboardTimings(timings);
     setPlayerRank(newRank);
-  };
+  }; */
   
+  //for hints
+  function shuffleTiles(tiles) {
+    return tiles.sort(() => 0.5 - Math.random());
+  }
+  function* generateCombinations(tiles) {
+    const maxLength = Math.min(tiles.length, 6); // limit to len 6 for computational reasons
+    for (let size = 2; size <= maxLength; size++) {
+        yield* combine(tiles, size);
+    }
+  }
+  function* combine(tiles, size, start = 0, initialCombo = []) {
+    if (initialCombo.length === size) {
+        yield initialCombo;
+        return;
+    }
+    for (let i = start; i < tiles.length; i++) {
+        yield* combine(tiles, size, i + 1, initialCombo.concat(tiles[i]));
+    }
+  }
+  function findValidWord(playerLetters, dictionary, maxAttempts = 10) {
+    let attempt = 0;
+    while (attempt < maxAttempts) {
+        const shuffled = shuffleTiles([...playerLetters]); // Clone and shuffle
+        for (let combo of generateCombinations(shuffled)) {
+            const word = combo.join('');
+            if (dictionary.search(word)) {
+                console.log(`Valid word found: ${word}`);
+                return word;
+            }
+        }
+        attempt++;
+    }
+    return null;
+}
+  const handleGetHint = () => {
+    const word = findValidWord(playerLetters, dictionary);
+    const newNum = numHints - 1;
+    setNumHints(newNum);
+    if (word) {
+        setValidationMessage(`Hint: Try the word '${word}'!`);
+    } else {
+        setValidationMessage("Couldn't find a valid word. Try again or use DUMP! to change tiles.");
+    }
+  };
+
   // Shuffle player rack
   const shuffleLetters = () => {
     const newLetters = playerLetters;
@@ -791,6 +839,7 @@ function BogoGram() {
           <button className="gameButton" onClick={handleDistributeButton} disabled={!gameName || distributeButtonDisabled || tilesDistributed}>Start Game</button>
         </div>
         <p></p>
+        <button className="gameButton" onClick={handleGetHint} disabled={numHints <= 1}> Get a hint</button>
         <button className="gameButton" onClick={shuffleLetters} disabled={playerLetters.length <= 1}>Shuffle</button>
         <button className="gameButton" onClick={rebuildGrid} disabled={tPlayed.numberOfTilesPlayed === 0}>Rebuild</button>
         <button className="gameButton" onClick={handlePeelButton} disabled={peelButtonDisabled || !(tilesDistributed && !playerLetters.length) || !tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}>PEEL</button>
