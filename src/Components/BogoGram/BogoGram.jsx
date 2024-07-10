@@ -843,7 +843,7 @@ function BogoGram() {
         <GameButton
           name={beastMode ? "Create A Beast Game" : "Create Game"}
           className={`${beastMode ? "beastModeGameButton" : ""}`}
-          desc={beastMode ? "Beast Mode ON!" : "Generates a game ID and creates a game"}
+          desc={beastMode ? "Beast Mode: More faster, more funner!" : "Generates a game ID and creates a game"}
           onClick={beastMode ? handleStartBeastGame : handleStartGame}
           disabled={startGameDisabled || gameName}
         />
@@ -874,7 +874,7 @@ function BogoGram() {
             name="HINT"
             desc={`Number of hints remaining: ${numHints}`}
             onClick={handleGetHint}
-            disabled={!tilesDistributed || (playerLetters.length < 2) || gameOver || numHints <= 1}
+            disabled={!tilesDistributed || (playerLetters.length < 2) || gameOver || numHints < 1}
           />
           <GameButton
             name="SHUFFLE"
@@ -890,7 +890,7 @@ function BogoGram() {
           />
           <GameButton
             name="PEEL"
-            desc="Draw 1 tile from the bag for everyone including yourself"
+            desc={beastMode ? "Draw 3 tiles from the bag for everyone in the game" : "Draw 1 tile from the bag for everyone in the game"}
             onClick={handlePeelButton}
             disabled={peelButtonDisabled || !(tilesDistributed && !playerLetters.length) || !tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}
           />
