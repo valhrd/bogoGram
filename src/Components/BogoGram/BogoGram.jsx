@@ -24,6 +24,9 @@ import GameButton from './GameButton';
 // Timer
 import useTimer from './useTimer';
 
+//Instructions
+import InstructionsOverlay from './InstructionsOverlay';
+
 // Grid formation plus tilebag
 const gridSize = 35;
 const initialGrid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(''));
@@ -118,6 +121,9 @@ function BogoGram() {
   const [playerCount, setPlayerCount] = useState(0);
   // for limiting number of hints
   const [numHints, setNumHints] = useState(0);
+
+  // instructions
+  const [showInstructions, setShowInstructions] = useState(false);
 
   // Additional booleans and delay time to disable buttons that should not be spammed
   // Buttons to disable: Start Game (may subject to change), Distribute, PEEL, DUMP, BANANAS!
@@ -257,6 +263,13 @@ function BogoGram() {
 
   // Join game function for other players
   const handleJoinGame = () => {
+    //fun
+    const fun = inputGameId.trim().toLowerCase();
+    if (fun === 'rick' || fun === 'video' || fun === 'music') {
+      const url = 'https://youtu.be/dQw4w9WgXcQ?si=okvQNghMp1mhPlwX';
+      window.open(url, '_blank');
+      return;
+    }
     if (!inputGameId.trim()) {
       alert("Please enter a valid game ID to join a game.");
       return;
@@ -758,6 +771,8 @@ function BogoGram() {
           ))}
         </h1>
         <button className="gameButton sign-in" onClick={signIn}>Sign In</button>
+        <button className="gameButton" onClick={() => setShowInstructions(true)}>How to Play</button>
+        {showInstructions && <InstructionsOverlay onClose={() => setShowInstructions(false)} />}
       </div>
     );
   }
