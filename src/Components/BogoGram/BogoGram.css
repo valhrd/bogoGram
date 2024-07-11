@@ -66,6 +66,30 @@
     transform: translateY(0px); /* Slight raise effect on hover */
 }
 
+.signOutButton {
+    background-color: rgb(240, 255, 172);
+    color: rgb(0, 0, 0);
+    font-weight: bold;
+    font-family: 'Fredoka One', sans-serif;
+    font-size: 16px;
+    padding: 12px 12px;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 3px #959d55;
+    cursor: pointer;
+    transition: all 0.1s ease 0s;
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    width: 100px;
+}
+
+.signOutButton:hover {
+    background-color: #6cfb78b0; /* A lighter green on hover */
+    box-shadow: 0 3px #159435; /* Deeper shadow for 3D effect on hover */
+    transform: translateY(0px); /* Slight raise effect on hover */
+}
+
 .description {
     padding: 10px;
     background-color: #000000;
@@ -108,12 +132,22 @@
 
 .game-name-display {
     user-select: text;
-    color: #fff;
+    /*color: #fff;
     background-color: #19211d91;
     padding: 10px;
     margin-top: 10px;
     margin-bottom: 5px;
-    font-size: 16px;
+    font-size: 16px;*/
+    
+    padding: 8px;
+    background-color: #000000;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    display: inline-block;
+    margin: 8px;
+    font-size: 18px;
+    color: #ffffff;
+    font-family: monospace;
 }
 
 /* CSS ror the Beast Mode button */
@@ -430,10 +464,10 @@ input[type="text"]:disabled, select:disabled {
     border-radius: 5px;
     display: inline-block;
     margin: 10px;
-    font-size: 20px;
+    font-size: 18px;
     color: #ffffff;
     font-family: monospace;
     position: absolute;
-    top: 15px;
-    left: 17px;
+    top: 70px;
+    left: 15px;
 }

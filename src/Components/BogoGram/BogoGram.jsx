@@ -246,7 +246,7 @@ function BogoGram() {
     createGame({beastMode: isBeastMode}).then((result) => {
       console.log('New Game Created with ID: ', result.data.gameID);
       setGameNumber(result.data.gameID);
-      setGameName(`${isBeastMode ? "Beast Mode" : ""} Game ` + result.data.gameID);
+      setGameName(`${isBeastMode ? "Beast Mode" : ""} ` + result.data.gameID);
       setNumHints(10);
       setAllValid(false);
       setBeastMode(isBeastMode);
@@ -271,7 +271,7 @@ function BogoGram() {
       }
       const res = inputGameId.trim();
       setGameNumber(res); // Set the current game ID to the one joined
-      setGameName(result.data.beastMode ? "Beast Mode Game " + res : "Game " + res); // Adjust the game name based on the mode
+      setGameName(result.data.beastMode ? "Beast Mode " + res : res); // Adjust the game name based on the mode
       setBeastMode(result.data.beastMode); // Set beast mode state
       alert("Successfully joined the game!");
       setInputGameId(''); // Clear the input field
@@ -400,6 +400,7 @@ function BogoGram() {
         const newTiles = result.data.tiles;
         if (result.data.status === "Tile given to another player") {
           console.log('Your dumped tile was given to another player.');
+          setValidationMessage('Your dumped tile was given to another player.');
           setDumpRack(prevDumpRack => {
             return [];
         });
@@ -556,41 +557,6 @@ function BogoGram() {
       }
     }
   };
-  
-  // leaderboard stuff
-  /* useEffect(() => {
-    const fetchLeaderboard = async () => {
-      if (!gameNumber || !user) return;
-      const docRef = doc(firestore, "leaderboard", "rankings");
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-          setLeaderboardTimings(docSnap.data().timing);
-      } else {
-          console.log("No such document in leaderboard!");
-      }
-    };
-
-    fetchLeaderboard();
-  }, []);
-
-  const updateLeaderboard = async (newTiming) => {
-    const docRef = doc(firestore, "leaderboard", "rankings");
-    const docSnap = await getDoc(docRef);
-    let timings = docSnap.exists() ? docSnap.data().timing : [];
-
-    timings.push(newTiming);
-    timings.sort((a, b) => a - b);  // Sort timings in ascending order
-
-    const newRank = timings.indexOf(newTiming) + 1;  // Determine rank
-
-    await updateDoc(docRef, {
-        timing: timings
-    });
-
-    setLeaderboardTimings(timings);
-    setPlayerRank(newRank);
-  }; */
 
   // For hints
   const handleGetHint = () => {
@@ -610,24 +576,19 @@ function BogoGram() {
     const words = [];
     const letterCount = {};
     letters.forEach((item) => {letterCount[item] = (letterCount[item] || 0) + 1});
-
     const depthSearch = (letterCount, path, curr, minLength = 2, depth = 6, maxWords = 50) => {
-
       if (words.length === maxWords) {
         return;
       }
-
       if (depth === 0) {
         if (curr.isEndOfWord) {
           words.push(path.join(''));
         }
         return;
       }
-
       if (curr.isEndOfWord && path.length >= minLength) {
         words.push(path.join(''));
       }
-
       for (const letter in letterCount) {
         if (letterCount[letter] > 0 && curr.children[letter]) {
           letterCount[letter]--;
@@ -638,13 +599,10 @@ function BogoGram() {
         } 
       }
     }
-
     depthSearch(letterCount, [], root);
     console.log(words);
     return words[Math.floor(Math.random() * words.length)];
   }
-
-  
   
   // Shuffle player rack
   const shuffleTiles = (tiles) => {
@@ -672,8 +630,6 @@ function BogoGram() {
     )));
     clearBoard();
   }
-
-
 
   // Drag and drop
   const handleDragOver = (event) => {
@@ -704,18 +660,6 @@ function BogoGram() {
 
   const handleDumpDragStart = (event, letter, index) => {
     handleDragStart(event, 'dump', letter, index);
-  };
-
-  // this is to update the tiles in the firestore document when they are dropped, so that when peel is used, the original 21 tiles don't get fetched. Added 23 Jun. May not use
-  const updateTilesInFirestore = async (newPlayerLetters) => {
-    const gameRef = doc(firestore, 'gameData', gameNumber);
-    try{
-      await updateDoc(gameRef, {
-        ['tileDistribution.${user.uid}']: newPlayerLetters
-      });
-    } catch (error) {
-      console.error("Error updating player tiles in Firestore:", error);
-    }
   };
 
   const handleDrop = (targetType, targetRow = null, targetCol = null) => (event) => {
@@ -833,13 +777,15 @@ function BogoGram() {
       </h1>
       {/* Conditional rendering to show the sign-out button only when the user is signed in */}
       {user && (
-        <button className="gameButton" onClick={signOut}>Sign Out</button>
+        <button className="signOutButton" onClick={signOut}>Sign Out</button>
       )}
       <div className="player-count-display">
         Players: {playerCount}
       </div>
       <div>
-        <p className="game-name-display">{gameName ? `Current Game: ${gameName}` : "No game started"}</p>
+        <div>
+          <p className="game-name-display">{gameName ? `Game ID: ${gameName}` : "No game started"}</p>
+          </div>
         <GameButton
           name={beastMode ? "Create A Beast Game" : "Create Game"}
           className={`${beastMode ? "beastModeGameButton" : ""}`}
