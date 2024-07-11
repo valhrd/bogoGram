@@ -1,7 +1,14 @@
 .container {
     text-align: center; /* centralises text */
+    background-color: #0f1b21;
+    height: 100vh;
+    margin: -50px;
 }
 
+.tictactoe-exit {
+    top: 80%;
+    margin-top: -100px;
+}
 
 /* Style for title */
 .title {

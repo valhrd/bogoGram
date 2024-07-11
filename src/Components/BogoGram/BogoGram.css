@@ -53,7 +53,7 @@
     padding: 12px 24px;
     border: none;
     border-radius: 8px;
-    box-shadow: 0 7px #bcc56b;
+    box-shadow: 0 5px #bcc56b;
     cursor: pointer;
     transition: all 0.1s ease 0s;
 
@@ -62,32 +62,16 @@
 
 .gameButton:hover {
     background-color: #47ff56; /* A lighter green on hover */
-    box-shadow: 0 7px #22c24a; /* Deeper shadow for 3D effect on hover */
+    box-shadow: 0 5px #22c24a; /* Deeper shadow for 3D effect on hover */
     transform: translateY(0px); /* Slight raise effect on hover */
 }
 
 .signOutButton {
-    background-color: rgb(240, 255, 172);
-    color: rgb(0, 0, 0);
-    font-weight: bold;
-    font-family: 'Fredoka One', sans-serif;
-    font-size: 16px;
     padding: 12px 12px;
-    border: none;
-    border-radius: 8px;
-    box-shadow: 0 3px #959d55;
-    cursor: pointer;
-    transition: all 0.1s ease 0s;
     position: absolute;
     left: 20px;
     top: 20px;
     width: 100px;
-}
-
-.signOutButton:hover {
-    background-color: #6cfb78b0; /* A lighter green on hover */
-    box-shadow: 0 3px #159435; /* Deeper shadow for 3D effect on hover */
-    transform: translateY(0px); /* Slight raise effect on hover */
 }
 
 .description {
@@ -115,17 +99,13 @@
 .gameButton:active {
     background-color: #47ff56;
     box-shadow: 0 0px #22c24a;
-    transform: translateY(7px);
-}
-
-.gameButton:focus {
-    background-color: rgb(240, 255, 172);
+    transform: translateY(5px);
 }
 
 .gameButton:disabled {
     background-color: rgb(173, 173, 173);
     box-shadow: 0 0px #505050;
-    transform: translateY(7px);
+    transform: translateY(5px);
     color: rgb(225, 225, 225);
     cursor: default;
 }
@@ -220,9 +200,9 @@
     border: none;
     border-radius: 8px;
     width: 200px;
-    box-shadow: 0 7px rgb(140, 0, 0);
+    box-shadow: 0 5px rgb(140, 0, 0);
     cursor: pointer;
-    transition: all 0.3s ease 0s;
+    transition: all 0.1s ease 0s;
 
     width: auto;
     min-width: 200px;
@@ -230,24 +210,20 @@
 
 .beastModeGameButton:hover {
     background-color: rgb(140, 0, 0);
-    box-shadow: 0 7px rgb(110, 0, 0);
+    box-shadow: 0 5px rgb(110, 0, 0);
     transform: translateY(0px);
 }
 
 .beastModeGameButton:active {
     background-color: rgb(140, 0, 0);
-    box-shadow: 0 2px rgb(110, 0, 0);
-    transform: translateY(7px);
-}
-
-.beastModeGameButton:focus {
-    background-color: rgb(140, 0, 0);
+    box-shadow: 0 0px rgb(110, 0, 0);
+    transform: translateY(5px);
 }
 
 .beastModeGameButton:disabled {
     background-color: rgb(173, 173, 173);
     box-shadow: 0 0px #505050;
-    transform: translateY(7px);
+    transform: translateY(5px);
 }
 
 /* Edited grid CSS */
@@ -322,14 +298,11 @@ input, select, button {
     min-height: 42px;
     max-height: fit-content;
     min-width: 300px;
-    max-width: 900px;
+    max-width: calc(4 * 200px + 3 * 10px);
     margin-left: auto;
     margin-right: auto;
     background-color: rgb(0, 0, 0);
 }
-
-
-/* Please figure tile id/class out */
 
 /* Player tiles CSS */
 .player-tilerack .player-letter {
@@ -471,6 +444,18 @@ input[type="text"]:disabled, select:disabled {
     top: 70px;
     left: 15px;
 }
+  
+.close-btn {
+    background-color: rgb(158, 171, 70);
+    box-shadow: 0 5px rgb(115, 125, 49); 
+    width: 300px;
+}
+
+.close-btn:active {
+    box-shadow: 0 0px rgb(115, 125, 49); 
+    transform: translateY(5px)
+}
+  
 .overlay {
     position: fixed;
     top: 0;
@@ -482,62 +467,37 @@ input[type="text"]:disabled, select:disabled {
     justify-content: center;
     align-items: center;
     z-index: 1000; /* Ensure it's above all other content */
-  }
+}
   
-  .overlay-content {
-    background-color: rgb(240, 255, 172); /* Light green from your buttons */
+.overlay-content {
+    background-color: rgb(245, 255, 199); /* Light green from your buttons */
     color: #333; /* Dark text for better readability */
     border-radius: 8px;
+    border: 3px solid black;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     padding: 20px;
     width: 80%;
-    max-width: 600px;
+    max-width: 800px;
     text-align: center;
-  }
+    font-family: monospace;
+}
+
+.overlay h2 {
+    color: #2fa339;
+    font-size: 32px;
+}
+
+.overlay p {
+    font-size: 20px;
+}
   
-  .close-btn {
-    float: right;
-    font-size: 1.5rem;
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    color: #333; /* Dark color for visibility */
-  }
-  
-  .overlay h2 {
-    color: #47ff56; /* Green to match the button hover */
-    font-family: 'Monospace', sans-serif;
-  }
-  
-  .overlay ul {
+.overlay ul {
     text-align: left;
     padding-left: 20px;
     margin-top: 20px;
-  }
-  
-  .overlay li {
-    margin-bottom: 10px;
-    font-family: 'Monospace', sans-serif;
-  }
-  
-  /* Styling for overlay buttons, similar to game buttons */
-  .overlay button {
-    background-color: rgb(240, 255, 172);
-    color: black;
-    font-family: 'Fredoka One', sans-serif;
     font-size: 16px;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    box-shadow: 0 7px #bcc56b;
-    cursor: pointer;
-    transition: all 0.1s ease 0s;
-    margin-top: 20px;
-  }
+}
   
-  .overlay button:hover {
-    background-color: #47ff56; /* Matching game button hover */
-    box-shadow: 0 7px #22c24a;
-    transform: translateY(-2px); /* Slight raise effect on hover */
-  }
-  
+.overlay li {
+    margin-bottom: 10px;
+}

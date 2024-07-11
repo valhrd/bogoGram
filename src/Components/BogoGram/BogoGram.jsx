@@ -10,6 +10,8 @@ import { useCollectionData } from 'react-firebase-hooks/firestore';
 import Trie from './Trie'; //new 11 Jun
 // import dictionaryData from './dictionary.json';
 
+import TicTacToe from '../TicTacToe/TicTacToe';
+
 import { ref, onValue, set } from 'firebase/database';
 import './Login.css';
 import './BogoGram.css';
@@ -24,7 +26,7 @@ import GameButton from './GameButton';
 // Timer
 import useTimer from './useTimer';
 
-//Instructions
+// Instructions
 import InstructionsOverlay from './InstructionsOverlay';
 
 // Grid formation plus tilebag
@@ -141,16 +143,7 @@ function BogoGram() {
   }
 
   const handleStartGame = () => {
-    startGame(false);
-    setStartGameDisabled(true);
-    buttonTimeOut(() => {
-      setStartGameDisabled(false);
-    });
-  }
-
-  const handleStartBeastGame = () => {
-    setBeastMode(true);
-    startGame(true);
+    startGame();
     setStartGameDisabled(true);
     buttonTimeOut(() => {
       setStartGameDisabled(false);
@@ -243,19 +236,20 @@ function BogoGram() {
     setHorizontal(!horizontal); // Change: keeps track of number of clicks
   };
 
-  // start/restart game function
-  const startGame = (isBeastMode) => {
+  // start/restart game function // Changed function to taking in isBeastMode variable
+  // to just referencing global beastMode boolean
+  const startGame = () => {
     clearBoard();
     setPlayerLetters([]);
     const functions  = getFunctions(app);
     const createGame = httpsCallable(functions, 'createGame');
-    createGame({beastMode: isBeastMode}).then((result) => {
+    createGame({beastMode: beastMode}).then((result) => {
       console.log('New Game Created with ID: ', result.data.gameID);
       setGameNumber(result.data.gameID);
-      setGameName(`${isBeastMode ? "Beast Mode" : ""} ` + result.data.gameID);
+      setGameName(result.data.gameID);
       setNumHints(10);
       setAllValid(false);
-      setBeastMode(isBeastMode);
+      setBeastMode(beastMode);
     }).catch(error => {
       console.error('Error in creating new game', error);
     });
@@ -266,8 +260,16 @@ function BogoGram() {
     //fun
     const fun = inputGameId.trim().toLowerCase();
     if (fun === 'rick' || fun === 'video' || fun === 'music') {
-      const url = 'https://youtu.be/dQw4w9WgXcQ?si=okvQNghMp1mhPlwX';
-      window.open(url, '_blank');
+      window.open('https://youtu.be/dQw4w9WgXcQ?si=okvQNghMp1mhPlwX', '_blank');
+      setInputGameId('');
+      return;
+    } else if (fun === 'scrabble') {
+      window.open('https://playscrabble.com/', '_blank')
+      setInputGameId('');
+      return;
+    } else if (fun === 'beast' || fun === 'beastmode') {
+      toggleBeastMode();
+      setInputGameId('');
       return;
     }
     if (!inputGameId.trim()) {
@@ -760,6 +762,11 @@ function BogoGram() {
     }
   }
 
+  const [ticTacToe, setTicTacToe] = useState(false)
+  const handleTicTacToe = () => {
+    setTicTacToe(!ticTacToe);
+  }
+
   if (!user) {
     return (
       <div className="Login">
@@ -770,13 +777,36 @@ function BogoGram() {
             </span>
           ))}
         </h1>
-        <button className="gameButton sign-in" onClick={signIn}>Sign In</button>
-        <button className="gameButton" onClick={() => setShowInstructions(true)}>How to Play</button>
+        <GameButton
+          name="Sign In"
+          onClick={signIn}
+        />
+        <GameButton
+          name="How to play"
+          onClick={() => setShowInstructions(true)}
+        />
         {showInstructions && <InstructionsOverlay onClose={() => setShowInstructions(false)} />}
+        <GameButton
+          name={`${ticTacToe ? "TicTacToe Enabled" : "TicTacToe Disabled"}`}
+          onClick={handleTicTacToe}
+        />
       </div>
     );
   }
 
+  if (user && ticTacToe) {
+    return (
+      <div>
+        <TicTacToe />
+        <GameButton
+          name="Return to menu"
+          className="tictactoe-exit"
+          onClick={signOut}
+        />
+      </div>
+    )
+  }
+  
 
   return (
     <div className={`Game`}>
@@ -791,9 +821,13 @@ function BogoGram() {
         ))}
       </h1>
       {/* Conditional rendering to show the sign-out button only when the user is signed in */}
-      {user && (
-        <button className="signOutButton" onClick={signOut}>Sign Out</button>
-      )}
+      <div>
+        <GameButton
+          name="Sign Out"
+          className="signOutButton"
+          onClick={signOut}
+        />
+      </div>
       <div className="player-count-display">
         Players: {playerCount}
       </div>
@@ -805,7 +839,7 @@ function BogoGram() {
           name={beastMode ? "Create A Beast Game" : "Create Game"}
           className={`${beastMode ? "beastModeGameButton" : ""}`}
           desc={beastMode ? "Beast Mode: More faster, more funner!" : "Generates a game ID and creates a game"}
-          onClick={beastMode ? handleStartBeastGame : handleStartGame}
+          onClick={handleStartGame}
           disabled={startGameDisabled || gameName}
         />
         <div>
@@ -858,7 +892,7 @@ function BogoGram() {
         </div>
       </div>
       <div>
-        <h2 className="player-letters">Player Letters</h2>
+        <h2 className="player-letters">Tile Rack</h2>
         <div
           className="player-tilerack"
 

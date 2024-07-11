@@ -5,15 +5,15 @@ function GameButton({ name, desc, className, onClick, disabled }) {
     return (
         <span>
             <button
-            className={`gameButton ${className}`}
-            onClick={onClick}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            disabled={disabled}
+                className={`gameButton ${className}`}
+                onClick={onClick}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                disabled={disabled}
             >
                 {name}
             </button>
-            <div className={`description ${isHovered ? "show" : ""}`}>{desc}</div>
+            <div className={`${desc ? "description" : ""} ${isHovered ? "show" : ""}`}>{desc}</div>
         </span>
     );
 }

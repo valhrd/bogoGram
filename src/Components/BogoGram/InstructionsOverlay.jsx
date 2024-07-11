@@ -1,10 +1,11 @@
 import React from 'react';
+import GameButton from './GameButton';
 
 const InstructionsOverlay = ({ onClose }) => {
   return (
     <div className="overlay">
       <div className="overlay-content">
-        <button className="close-btn" onClick={onClose}>&times;</button>
+        {/* <button className="close-btn" onClick={onClose}>&times;</button> */}
         <h2>How to Play</h2>
         <p>Here are the instructions on how to play the game:</p>
         <ul>
@@ -21,6 +22,11 @@ const InstructionsOverlay = ({ onClose }) => {
           <li>Want to tear down and rebuild your grid? Use "Rebuild" to recall all tiles from the grid to your rack</li>
           <li>Press 'Bananas' when you finish to check if you win.</li>
         </ul>
+        <GameButton
+          name="Got it!"
+          className="close-btn"
+          onClick={onClose}
+        />
       </div>
     </div>
   );
