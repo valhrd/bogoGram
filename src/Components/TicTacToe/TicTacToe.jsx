@@ -1,108 +1,143 @@
 import React, { useState, useRef } from 'react';
 import './TicTacToe.css';
-import circle_icon from '../Assets/circle.png'
-import cross_icon from '../Assets/cross.png'
-
-let data = ["","","","","","","","",""];
+import GameButton from '../BogoGram/GameButton';
+import Tile from '../BogoGram/Tile';
 
 const TicTacToe = () => {
+    const [count, setCount] = useState(0);
+    const [endGame, setEndGame] = useState(true);
+    const [letterChosen, setLetterChosen] = useState("");
+    const [selected, setSelected] = useState(false);
+    const [board, setBoard] = useState([
+        ["", "", ""],
+        ["", "", ""],
+        ["", "", ""]
+    ]);
+    const titleRef = useRef(null);
+    
 
-    let [count, setCount] = useState(0);
-    let [lock, setLock] = useState(false);
-    let titleRef = useRef(null);
-
-    let box1 = useRef(null);
-    let box2 = useRef(null);
-    let box3 = useRef(null);
-    let box4 = useRef(null);
-    let box5 = useRef(null);
-    let box6 = useRef(null);
-    let box7 = useRef(null);
-    let box8 = useRef(null);
-    let box9 = useRef(null);
-
-    let box_array = [box1, box2, box3, box4, box5, box6, box7, box8, box9];
-
-    // Error function
-    const toggle = (e, num) => {
-        if (lock) {
-            return 0;
+    const toggle = (row, col) => {
+        if (endGame || board[row][col]) {
+            return;
         }
-        if (count % 2 === 0) {
-            e.target.innerHTML = `<img src='${cross_icon}'>`;
-            data[num] = "x";
-            setCount(++count);
-        } else {
-            e.target.innerHTML = `<img src='${circle_icon}'>`;
-            data[num] = "o";
-            setCount(++count);
-        }
-        checkWin();
-    }
+        const newBoard = board.map((r, i) =>
+            r.map((cell, j) => {
+                if (i === row && j === col) {
+                    return count % 2 === 0 ? "x" : "o";
+                }
+                return cell;
+            })
+        );
+        setBoard(newBoard);
+        setCount(count + 1);
+        checkWin(newBoard);
+    };
 
-    const checkWin = () => {
-        if (data[0] === data[1] && data[1] === data[2] && data[2] !== "") {
-            won(data[2]);
-        } else if (data[3] === data[4] && data[4] === data[5] && data[5] !== "") {
-            won(data[5]);
-        } else if (data[6] === data[7] && data[7] === data[8] && data[8] !== "") {
-            won(data[8]);
-        } else if (data[0] === data[3] && data[3] === data[6] && data[6] !== "") {
-            won(data[6]);
-        } else if (data[1] === data[4] && data[4] === data[7] && data[7] !== "") {
-            won(data[7]);
-        } else if (data[2] === data[5] && data[5] === data[8] && data[8] !== "") {
-            won(data[8]);
-        } else if (data[0] === data[4] && data[4] === data[8] && data[8] !== "") {
-            won(data[8]);
-        } else if (data[2] === data[4] && data[4] === data[6] && data[6] !== "") {
-            won(data[6]);
-        } else if (data.reduce((x, y)  => {return x && y})) {
+    const checkWin = (board) => {
+        for (let i = 0; i < 3; i++) {
+            // Check rows
+            if (board[i][0] && board[i][0] === board[i][1] && board[i][1] === board[i][2]) {
+                won(board[i][0]);
+                return;
+            }
+            // Check columns
+            if (board[0][i] && board[0][i] === board[1][i] && board[1][i] === board[2][i]) {
+                won(board[0][i]);
+                return;
+            }
+        }
+        // Check diagonals
+        if (board[0][0] && board[0][0] === board[1][1] && board[1][1] === board[2][2]) {
+            won(board[0][0]);
+            return;
+        }
+        if (board[0][2] && board[0][2] === board[1][1] && board[1][1] === board[2][0]) {
+            won(board[0][2]);
+            return;
+        }
+        // Check for draw
+        if (board.flat().every(cell => cell)) {
             titleRef.current.innerHTML = `Draw!`;
         }
-    }
+    };
 
     const won = (winner) => {
-        setLock(true);
+        setEndGame(true);
         if (winner === "x") {
-            titleRef.current.innerHTML = `Congratulations: <img src='${cross_icon}'> Wins`;
+            titleRef.current.innerHTML = `Congratulations: &times; Wins`;
         } else {
-            titleRef.current.innerHTML = `Congratulations: <img src='${circle_icon}'> Wins`;
+            titleRef.current.innerHTML = `Congratulations: O Wins`;
         }
-    }
+    };
 
-    const reset = () => {
-        setLock(false); // Allow playing again
-        data = ["","","","","","","","",""]; // Resets the array keeping track of the board
-        titleRef.current.innerHTML = 'Tic Tac Toe In <span>React</span>';
-        box_array.map((e) => {
-            e.current.innerHTML = "";
-        });
-    }
+    const handleStartGame = () => {
+        setEndGame(false);
+    };
+
+    const handleReset = () => {
+        setEndGame(true);
+        setBoard([
+            ["", "", ""],
+            ["", "", ""],
+            ["", "", ""]
+        ]);
+        titleRef.current.innerHTML = 'Select your letter';
+        setCount(0);
+    };
 
     return (
         <div className='container'>
-            <h1 className='title' ref={titleRef}>Tic Tac Toe Game In <span>React</span></h1>
+            <h1 className='title' ref={titleRef}>Select your letter</h1>
             <div className='board'>
-                <div className="row1">
-                    <div className="boxes" ref={box1} onClick={(e) => {toggle(e, 0)}}></div>
-                    <div className="boxes" ref={box2} onClick={(e) => {toggle(e, 1)}}></div>
-                    <div className="boxes" ref={box3} onClick={(e) => {toggle(e, 2)}}></div>
-                </div>
-                <div className="row2">
-                    <div className="boxes" ref={box4} onClick={(e) => {toggle(e, 3)}}></div>
-                    <div className="boxes" ref={box5} onClick={(e) => {toggle(e, 4)}}></div>
-                    <div className="boxes" ref={box6} onClick={(e) => {toggle(e, 5)}}></div>
-                </div>
-                <div className="row3">
-                    <div className="boxes" ref={box7} onClick={(e) => {toggle(e, 6)}}></div>
-                    <div className="boxes" ref={box8} onClick={(e) => {toggle(e, 7)}}></div>
-                    <div className="boxes" ref={box9} onClick={(e) => {toggle(e, 8)}}></div>
-                </div>
+                {board.map((row, rowIndex) => (
+                    <div key={rowIndex} className={`row${rowIndex + 1}`}>
+                        {row.map((box, colIndex) => {
+                            if (rowIndex === 1 && colIndex !== 1) {
+                                if (!letterChosen) {
+                                    return (
+                                        <div
+                                            key={colIndex}
+                                            className="boxes"
+                                            onClick={() => toggle(rowIndex, colIndex)}
+                                        >
+                                            <Tile
+                                                letter={colIndex === 0 ? "X" : "O"}
+                                                className={`tictactoe-tile ${selected ? "selected" : ""}`}
+                                                onClick={() => setSelected(!selected)}
+                                            />
+                                        </div>
+                                    )
+                                }
+                            }
+                            return (
+                                <div
+                                    key={colIndex}
+                                    className="boxes"
+                                    onClick={() => toggle(rowIndex, colIndex)}
+                                >
+                                    {box && <Tile letter={box === "x" ? "X" : "O"} className="tictactoe-tile" />}
+                                </div>
+                            )
+                        })}
+                    </div>
+                ))}
             </div>
-            <button className='reset' onClick={() => {reset()}}>Reset</button>
+            <div>
+                <GameButton
+                    name="Start"
+                    className="start"
+                    onClick={handleStartGame}
+                    disabled={!endGame && letterChosen}
+                />
+                <GameButton
+                    name="Reset"
+                    className="reset"
+                    onClick={handleReset}
+                    disabled={endGame}
+                />
+            </div>
         </div>
     );
-}
+};
 
 export default TicTacToe;

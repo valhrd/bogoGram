@@ -67,9 +67,10 @@ function BogoGram() {
   const [mustConnect, setMustConnect] = useState(false);
 
   // Meant to keep track of previous values of startRow and startCol for direction toggling
-  const [startRow, setStartRow] = useState(null);
-  const [startCol, setStartCol] = useState(null);
-
+  // const [startRow, setStartRow] = useState(null);
+  // const [startCol, setStartCol] = useState(null);
+  // For toggling direction of play
+  // const [horizontal, setHorizontal] = useState(1);
 
   // for server side things
   const gameDataRef = collection(firestore, 'gameData'); 
@@ -90,11 +91,10 @@ function BogoGram() {
   //for dictionary checking (11 Jun)
   const [dictionary, setDictionary] = useState(null);
   const [validationMessage, setValidationMessage] = useState('');  //this is to change a state after checking if all the words are valid
-  
 
-  // For toggling direction of play
-  const [horizontal, setHorizontal] = useState(1);
-
+  // Just for convenience to make the game title
+  const [loginTitle, setLoginTitle] = useState('BOGOGRAM'.split(''));
+  const [gameTitle, setGameTitle] = useState('BOGOGRAM'.split(''));
 
   // Player tile rack
   const [playerLetters, setPlayerLetters] = useState([]);
@@ -230,11 +230,11 @@ function BogoGram() {
 
 
   // is this still necessary?
-  const handleCellClick = (row, col) => {
-    setStartRow(row);
-    setStartCol(col);
-    setHorizontal(!horizontal); // Change: keeps track of number of clicks
-  };
+  // const handleCellClick = (row, col) => {
+  //   setStartRow(row);
+  //   setStartCol(col);
+  //   setHorizontal(!horizontal); // Change: keeps track of number of clicks
+  // };
 
   // start/restart game function // Changed function to taking in isBeastMode variable
   // to just referencing global beastMode boolean
@@ -267,7 +267,7 @@ function BogoGram() {
       window.open('https://playscrabble.com/', '_blank')
       setInputGameId('');
       return;
-    } else if (fun === 'beast' || fun === 'beastmode') {
+    } else if (!gameName && (fun === 'beast' || fun === 'beastmode')) {
       toggleBeastMode();
       setInputGameId('');
       return;
@@ -749,9 +749,6 @@ function BogoGram() {
     .catch(error => console.error('Error updating the database:', error));
   };
 
-  // Just for convenience to make the game title
-  const [gameTitle, setGameTitle] = useState('BOGOGRAM'.split(''));
-
   const toggleBeastMode = () => {
     const newBeastMode = !beastMode
     setBeastMode(newBeastMode);
@@ -771,10 +768,12 @@ function BogoGram() {
     return (
       <div className="Login">
         <h1 className="login-title">
-          {gameTitle.map((letter) => (
-            <span className="login-title-tile">
-              <span>{letter}</span>
-            </span>
+          {loginTitle.map((letter, index) => (
+              <span className={`login-title-tile ${(index >= 1 && index <= 3 && ticTacToe) ? "special-tile" : ""}`}>
+                <span onClick={(index === 2) ? handleTicTacToe : () => {}}>
+                  {(index === 2 && ticTacToe) ? "X" : letter}
+                </span>
+              </span>
           ))}
         </h1>
         <GameButton
@@ -786,17 +785,13 @@ function BogoGram() {
           onClick={() => setShowInstructions(true)}
         />
         {showInstructions && <InstructionsOverlay onClose={() => setShowInstructions(false)} />}
-        <GameButton
-          name={`${ticTacToe ? "TicTacToe Enabled" : "TicTacToe Disabled"}`}
-          onClick={handleTicTacToe}
-        />
       </div>
     );
   }
 
   if (user && ticTacToe) {
     return (
-      <div>
+      <div className='TicTacToe'>
         <TicTacToe />
         <GameButton
           name="Return to menu"
@@ -979,8 +974,9 @@ function BogoGram() {
                 <Tile
                   letter={cell}
                   key={colIndex}
-                  className={`${cell ? 'board-tile' : ''} ${startRow === rowIndex && startCol === colIndex ? 'selected' : ''}`}
-                  onClick={() => handleCellClick(rowIndex, colIndex)}
+                  className={`${cell ? 'board-tile' : ''}`}
+                  // Probably unneeded
+                  // onClick={() => handleCellClick(rowIndex, colIndex)}
                   draggable={true}
 
                   // Testing drag and drop functionality

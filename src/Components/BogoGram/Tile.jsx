@@ -13,7 +13,7 @@ function Tile({ letter, key, className, onClick, onDragOver, onDrop, onDragStart
             draggable={letter !== "" && draggable}
             style={{cursor : cursorStyle}}
         >
-        {letter}
+            {letter}
         </div>
     );
 }
