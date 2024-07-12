@@ -3,7 +3,7 @@ import './TicTacToe.css';
 import GameButton from '../BogoGram/GameButton';
 import Tile from '../BogoGram/Tile';
 
-const TicTacToe = () => {
+const TicTacToe = ({ signOut }) => {
     const [count, setCount] = useState(0);
     const [endGame, setEndGame] = useState(true);
     const [letterChosen, setLetterChosen] = useState(null);
@@ -165,6 +165,11 @@ const TicTacToe = () => {
                     name="Reset"
                     className="reset"
                     onClick={handleReset}
+                />
+                <GameButton
+                    name="Return to menu"
+                    className="tictactoe-exit"
+                    onClick={signOut}
                 />
             </div>
         </div>

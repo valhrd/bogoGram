@@ -793,12 +793,7 @@ function BogoGram() {
   if (user && ticTacToe) {
     return (
       <div className='TicTacToe'>
-        <TicTacToe />
-        <GameButton
-          name="Return to menu"
-          className="tictactoe-exit"
-          onClick={signOut}
-        />
+        <TicTacToe signOut={signOut} />
       </div>
     )
   }
