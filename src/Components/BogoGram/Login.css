@@ -47,7 +47,7 @@
     transform: scale(1,  calc(110 / 120));
 }
 
-.special-tile {
+.Login .special-tile {
     box-shadow: 0 0px #bcc56b;
     transform: translateY(10px);
     background: linear-gradient(to bottom, rgb(22, 0, 58) 50%, rgb(9, 0, 22) 120px);
@@ -55,7 +55,69 @@
     transition: all 0.1s ease 0s;
 }
 
-.special-tile:hover {
+.Login .special-tile:hover {
     background: linear-gradient(to bottom, rgb(22, 0, 58) 50%, rgb(9, 0, 22) 120px);
     color: white;
+}
+
+.Login .special-mode {
+    background: rgb(0, 131, 129);
+    box-shadow: 0 5px rgb(0, 83, 81);
+}
+
+.Login .close-btn {
+    background-color: rgb(158, 171, 70);
+    box-shadow: 0 5px rgb(115, 125, 49); 
+    width: 300px;
+}
+
+.Login .close-btn:active {
+    box-shadow: 0 0px rgb(115, 125, 49); 
+    transform: translateY(5px)
+}
+
+.Login .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75); /* Slightly darker to focus attention */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure it's above all other content */
+}
+  
+.Login .overlay-content {
+    background-color: rgb(245, 255, 199); /* Light green from your buttons */
+    color: #333; /* Dark text for better readability */
+    border-radius: 8px;
+    border: 3px solid black;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    width: 80%;
+    max-width: 800px;
+    text-align: center;
+    font-family: monospace;
+}
+
+.Login .overlay h2 {
+    color: #2fa339;
+    font-size: 32px;
+}
+
+.Login .overlay p {
+    font-size: 20px;
+}
+  
+.Login .overlay ul {
+    text-align: left;
+    padding-left: 20px;
+    margin-top: 20px;
+    font-size: 16px;
+}
+  
+.Login .overlay li {
+    margin-bottom: 10px;
 }

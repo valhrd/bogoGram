@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import './TicTacToe.css';
 import GameButton from '../BogoGram/GameButton';
 import Tile from '../BogoGram/Tile';
@@ -6,15 +6,15 @@ import Tile from '../BogoGram/Tile';
 const TicTacToe = () => {
     const [count, setCount] = useState(0);
     const [endGame, setEndGame] = useState(true);
-    const [letterChosen, setLetterChosen] = useState("");
-    const [selected, setSelected] = useState(false);
+    const [letterChosen, setLetterChosen] = useState(null);
+    const [oppLetter, setOppLetter] = useState(null);
+    const [selected, setSelected] = useState(null);
     const [board, setBoard] = useState([
         ["", "", ""],
         ["", "", ""],
         ["", "", ""]
     ]);
-    const titleRef = useRef(null);
-    
+    const [title, setTitle] = useState("Select your letter");
 
     const toggle = (row, col) => {
         if (endGame || board[row][col]) {
@@ -23,7 +23,7 @@ const TicTacToe = () => {
         const newBoard = board.map((r, i) =>
             r.map((cell, j) => {
                 if (i === row && j === col) {
-                    return count % 2 === 0 ? "x" : "o";
+                    return count % 2 === 0 ? letterChosen : oppLetter;
                 }
                 return cell;
             })
@@ -57,56 +57,94 @@ const TicTacToe = () => {
         }
         // Check for draw
         if (board.flat().every(cell => cell)) {
-            titleRef.current.innerHTML = `Draw!`;
+            setTitle("Draw!");
         }
     };
 
     const won = (winner) => {
         setEndGame(true);
-        if (winner === "x") {
-            titleRef.current.innerHTML = `Congratulations: &times; Wins`;
-        } else {
-            titleRef.current.innerHTML = `Congratulations: O Wins`;
+        setTitle(`Congratulations: ${winner} Wins`);
+    };
+
+    const handleStartGame = (letter) => {
+        if (!letter) {
+            setTitle(`Please select a letter!`);
+            return;
         }
-    };
+        setTitle(`Playing as ${letter}`);
+        setLetterChosen(letter);
+        
+        const newOppLetter = (letter === "X") ? "O" : "X"
+        setOppLetter(newOppLetter);
 
-    const handleStartGame = () => {
         setEndGame(false);
-    };
-
-    const handleReset = () => {
-        setEndGame(true);
         setBoard([
             ["", "", ""],
             ["", "", ""],
             ["", "", ""]
         ]);
-        titleRef.current.innerHTML = 'Select your letter';
         setCount(0);
+    };
+
+    const handleReset = () => {
+        setEndGame(true);
+        setLetterChosen(null);
+        setOppLetter(null);
+        setSelected(null);
+        setBoard([
+            ["", "", ""],
+            ["X", "Confirm", "O"],
+            ["", "", ""]
+        ]);
+        setTitle("Select your letter");
+        setCount(0);
+    };
+
+    const handleTileSelect = (letter) => {
+        setSelected(letter === selected ? null : letter);
+        setTitle(`Play as ${letter}?`);
     };
 
     return (
         <div className='container'>
-            <h1 className='title' ref={titleRef}>Select your letter</h1>
+            <h1 className='title'>{title}</h1>
             <div className='board'>
                 {board.map((row, rowIndex) => (
                     <div key={rowIndex} className={`row${rowIndex + 1}`}>
                         {row.map((box, colIndex) => {
-                            if (rowIndex === 1 && colIndex !== 1) {
-                                if (!letterChosen) {
+                            if (!letterChosen && rowIndex === 1) {
+                                let letter;
+                                if (colIndex === 0) {
+                                    letter = 'X';
+                                } else if (colIndex === 2) {
+                                    letter = 'O';
+                                }
+                                if (colIndex !== 1) {
                                     return (
                                         <div
                                             key={colIndex}
                                             className="boxes"
-                                            onClick={() => toggle(rowIndex, colIndex)}
+                                            onClick={() => handleTileSelect(letter)}
                                         >
                                             <Tile
-                                                letter={colIndex === 0 ? "X" : "O"}
-                                                className={`tictactoe-tile ${selected ? "selected" : ""}`}
-                                                onClick={() => setSelected(!selected)}
+                                                letter={letter}
+                                                className={`tictactoe-tile ${letter === selected ? "selected" : ""}`}
                                             />
                                         </div>
-                                    )
+                                    );
+                                } else {
+                                    return (
+                                        <div
+                                            key={colIndex}
+                                            className="boxes"
+                                            onClick={() => handleStartGame(selected)}
+                                        >
+                                            <Tile
+                                                letter={`Confirm`}
+                                                className={`confirmation tictactoe-tile`}
+                                            />
+                                        </div>
+                                    );
                                 }
                             }
                             return (
@@ -115,25 +153,18 @@ const TicTacToe = () => {
                                     className="boxes"
                                     onClick={() => toggle(rowIndex, colIndex)}
                                 >
-                                    {box && <Tile letter={box === "x" ? "X" : "O"} className="tictactoe-tile" />}
+                                    {box && <Tile letter={box} className="tictactoe-tile" />}
                                 </div>
-                            )
+                            );
                         })}
                     </div>
                 ))}
             </div>
             <div>
                 <GameButton
-                    name="Start"
-                    className="start"
-                    onClick={handleStartGame}
-                    disabled={!endGame && letterChosen}
-                />
-                <GameButton
                     name="Reset"
                     className="reset"
                     onClick={handleReset}
-                    disabled={endGame}
                 />
             </div>
         </div>

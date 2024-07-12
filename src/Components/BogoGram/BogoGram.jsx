@@ -778,6 +778,7 @@ function BogoGram() {
         </h1>
         <GameButton
           name="Sign In"
+          className={ticTacToe ? "special-mode" : ""}
           onClick={signIn}
         />
         <GameButton

@@ -68,9 +68,26 @@
     transition: all 0.1s ease 0s;
 }
 
+.TicTacToe .confirmation {
+    font-size: 20px;
+    transform: none;
+}
+
+.TicTacToe .confirmation:active {
+    background-color: rgb(0, 131, 129);
+    box-shadow: 0 0px rgb(0, 83, 81);
+    transform: translateY(5px);
+    color: white
+}
+
 .selected {
     background-color: rgb(0, 131, 129);
     box-shadow: 0 0px rgb(0, 83, 81);
     transform: translateY(5px);
     color: white
+}
+
+.TicTacToe .reset {
+    background: rgb(0, 131, 129);
+    box-shadow: 0 5px rgb(0, 83, 81);
 }
