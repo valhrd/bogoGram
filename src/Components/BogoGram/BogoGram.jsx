@@ -854,36 +854,9 @@ function BogoGram() {
             disabled={!gameName || distributeButtonDisabled || tilesDistributed}
           />
         </div>
-        <p></p>
-        <div>
-          <GameButton
-            name="HINT"
-            desc={`Number of hints remaining: ${numHints}`}
-            onClick={handleGetHint}
-            disabled={!tilesDistributed || (playerLetters.length < 2) || gameOver || numHints < 1}
-          />
-          <GameButton
-            name="SHUFFLE"
-            desc="Mixes your player rack"
-            onClick={shuffleLetters}
-            disabled={playerLetters.length <= 1}
-          />
-          <GameButton
-            name="REBUILD"
-            desc="Recalls all your tiles back to the player rack"
-            onClick={rebuildGrid}
-            disabled={tPlayed.numberOfTilesPlayed === 0}
-          />
-          <GameButton
-            name="PEEL"
-            desc={beastMode ? "Draw 3 tiles from the bag for everyone in the game" : "Draw 1 tile from the bag for everyone in the game"}
-            onClick={handlePeelButton}
-            disabled={peelButtonDisabled || !(tilesDistributed && !playerLetters.length) || !tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}
-          />
-        </div>
       </div>
-      <div>
-        <h2 className="player-letters">Tile Rack</h2>
+      <div className="tilerack-container">
+        <h2 className="tilerack-title">Tile Rack</h2>
         <div
           className="player-tilerack"
 
@@ -906,44 +879,79 @@ function BogoGram() {
             ))}
           </div>
         </div>
-      </div>
-      <div>
-        <div
-          className="dump-rack"
+        <div className="button-container">
+          <div className="dump-container">
+            <h2 className="dump-rack-title">
+              Dump Rack
+            </h2>
+            <div
+              className="dump-rack"
 
-          // Drag and drop from board to player rack
-          onDrop={handleDrop('dump')}
-          onDragOver={handleDragOver}
-        >
-          {/* Testing drag and drop feature */}
+              // Drag and drop from board to player rack
+              onDrop={handleDrop('dump')}
+              onDragOver={handleDragOver}
+            >
+              {/* Testing drag and drop feature */}
+              <div>
+                {dumpRack.map((letter, index) => (
+                  <Tile
+                    letter={letter}
+                    key={index}
+                    className={`${dumpButtonDisabled ? "dump-cooldown" : ""} dump-letter`}
+                    draggable={!dumpButtonDisabled}
+                    
+                    // Additional code for drag and drop feature
+                    onDragStart={(event) => handleDumpDragStart(event, letter, 0)}
+                  />
+                ))}
+              </div>
+            </div>
+            <GameButton
+              name="DUMP"
+              desc={`${beastMode ? "Dump 1 tile for a chance of getting 5 back" : "Dump 1 tile back into the bag and get 3 in return"}`}
+              onClick={handleDumpButton}
+              disabled={dumpButtonDisabled || dumpRack.length !== 1}
+            />
+          </div>
           <div>
-            {dumpRack.map((letter, index) => (
-              <Tile
-                letter={letter}
-                key={index}
-                className={`${dumpButtonDisabled ? "dump-cooldown" : ""} dump-letter`}
-                draggable={!dumpButtonDisabled}
-                
-                // Additional code for drag and drop feature
-                onDragStart={(event) => handleDumpDragStart(event, letter, 0)}
-              />
-            ))}
+            <GameButton
+              name="HINT"
+              desc={`Number of hints remaining: ${numHints}`}
+              onClick={handleGetHint}
+              disabled={!tilesDistributed || (playerLetters.length < 2) || gameOver || numHints < 1}
+            />
+            <GameButton
+              name="SHUFFLE"
+              desc="Mixes your player rack"
+              onClick={shuffleLetters}
+              disabled={playerLetters.length <= 1}
+            />
+            <GameButton
+              name="REBUILD"
+              desc="Recalls all your tiles back to the player rack"
+              onClick={rebuildGrid}
+              disabled={tPlayed.numberOfTilesPlayed === 0}
+            />
+            <GameButton
+              name="PEEL"
+              desc={beastMode ? "Draw 3 tiles from the bag for everyone in the game" : "Draw 1 tile from the bag for everyone in the game"}
+              onClick={handlePeelButton}
+              disabled={peelButtonDisabled || !(tilesDistributed && !playerLetters.length) || !tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}
+            />
+          </div>
+          <div>
+            <GameButton
+              name="BANANAS!"
+              desc="End the game right now"
+              onClick={handleBananasButton}
+              disabled={bananasButtonDisabled || !(tilesDistributed && !playerLetters.length) || tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}
+            />
           </div>
         </div>
-        <GameButton
-          name="DUMP"
-          desc={`${beastMode ? "Dump 1 tile for a chance of getting 5 back" : "Dump 1 tile back into the bag and get 3 in return"}`}
-          onClick={handleDumpButton}
-          disabled={dumpButtonDisabled || dumpRack.length !== 1}
-        />
       </div>
       <div>
-        <GameButton
-          name="BANANAS!"
-          desc="End the game right now"
-          onClick={handleBananasButton}
-          disabled={bananasButtonDisabled || !(tilesDistributed && !playerLetters.length) || tilesInBag || !tPlayed.areAllTilesConnected() || dumpRack.length}
-        />
+      </div>
+      <div>
         {validationMessage && <p className="check-words-display">{validationMessage}</p>}
       </div>
       <div>

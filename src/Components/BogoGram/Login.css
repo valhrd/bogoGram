@@ -90,14 +90,14 @@
 }
   
 .Login .overlay-content {
-    background-color: rgb(245, 255, 199); /* Light green from your buttons */
-    color: #333; /* Dark text for better readability */
+    background-color: rgb(236, 243, 195);
+    color: #000000;
     border-radius: 8px;
     border: 3px solid black;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     padding: 20px;
     width: 80%;
-    max-width: 800px;
+    max-width: 1000px;
     text-align: center;
     font-family: monospace;
 }
@@ -119,5 +119,22 @@
 }
   
 .Login .overlay li {
-    margin-bottom: 10px;
+    font-size: 20px;
+    margin-bottom: 12px;
+}
+
+.Login .overlay li span {
+    font-weight: bold;
+    color: rgb(192, 0, 0);
+}
+
+.Login .overlay li .button-name{
+    background-color: #1bff2e;
+    color: rgb(0, 0, 0);
+    font-size: 16px;
+    padding: 4px 12px;
+    font-family: 'Fredoka One', sans-serif;
+    font-weight: bold;
+    border: none;
+    border-radius: 4px;
 }

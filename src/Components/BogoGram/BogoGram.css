@@ -287,18 +287,30 @@ input, select, button {
     margin: 5px;
 }
 
-.player-letters {
+.tilerack-title {
     color: white;
     margin-bottom: 5px;
+    margin-top: -5px;
+}
+
+.tilerack-container {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: rgb(0, 29, 22);
+    border: 3px solid #ccc;
+    justify-content: center;
+    padding: 15px 0px;
+    box-sizing: border-box;
 }
 
 /* CSS for player tile-rack has to change at some point */
 .player-tilerack {
     border: 2px solid rgb(255, 255, 255);
+    border-radius: 4px;
     min-height: 42px;
     max-height: fit-content;
-    min-width: 300px;
-    max-width: calc(4 * 200px + 3 * 10px);
+    width: 90%;
     margin-left: auto;
     margin-right: auto;
     background-color: rgb(0, 0, 0);
@@ -328,14 +340,33 @@ input, select, button {
     opacity: 0.7;
 }
 
+.button-container {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr; /* Create 3 equal columns */
+    align-items: center;
+    margin: 5px;
+}
+
+.button-container .dump-container {
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
+    align-items: center;
+    gap: 10px;
+}
+
+.button-container .dump-container .dump-rack-title {
+    color: white;
+    text-align: center;
+    margin: auto 0;
+}
+
 /* Letters to dump */
 .dump-rack {
     border: 2px solid rgb(255, 255, 255);
     height: 42px;
-    width: 42px;
-    margin-top: 20px;
-    margin-left: auto;
-    margin-right: auto;
+    min-width: 42px;
+    margin-top: 10px;
     background-color: rgb(0, 0, 0);
 }
 
