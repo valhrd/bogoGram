@@ -110,15 +110,14 @@
     cursor: default;
 }
 
-.game-name-display {
-    user-select: text;
-    /*color: #fff;
-    background-color: #19211d91;
-    padding: 10px;
-    margin-top: 10px;
-    margin-bottom: 5px;
-    font-size: 16px;*/
-    
+.gameID-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+}
+
+.gameID-container .game-name-display {
+    user-select: text;   
     padding: 8px;
     background-color: #000000;
     border: 2px solid #ccc;
@@ -128,6 +127,24 @@
     font-size: 18px;
     color: #ffffff;
     font-family: monospace;
+}
+
+.gameID-container .copy-button {
+    background-color: #c4c4c4;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    width: 41px;
+    height: 41px;
+    justify-self: start;
+    cursor: pointer;
+}
+
+.gameID-container .copy-button:hover {
+    background-color: #47ff56;
+}
+
+.gameID-container .copy-button img {
+    width: 24px;
 }
 
 /* CSS ror the Beast Mode button */
@@ -342,7 +359,7 @@ input, select, button {
 
 .button-container {
     display: grid;
-    grid-template-columns: 1fr 2fr 1fr; /* Create 3 equal columns */
+    grid-template-columns: 1fr 2fr 1fr;
     align-items: center;
     margin: 5px;
 }
@@ -509,22 +526,3 @@ input[type="text"]:disabled, select:disabled {
     font-size: 1.5rem;
     cursor: pointer;
   }
-  
-.copy-button {
-    background-color: rgb(240, 255, 172); /* Light green background */
-    color: black; /* Black text */
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-left: 10px;
-  }
-
-.copy-button img {
-    width: 28px; 
-    height: auto;
-}
-
-.copy-button:hover img {
-    background-color: #47ff56; /* Lighter green on hover */
-    filter: brightness(0.8);
-}

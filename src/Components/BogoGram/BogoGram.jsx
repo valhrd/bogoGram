@@ -266,7 +266,7 @@ function BogoGram() {
   const copyToClipboard = () => {
     if (gameName) {
       navigator.clipboard.writeText(gameName).then(() => {
-         setValidationMessage("Succesfully copied to clipboard!");
+        setValidationMessage("Successfully copied to clipboard!");
       }).catch(err => {
         console.error('Failed to copy: ', err);
       });
@@ -876,9 +876,12 @@ function BogoGram() {
         Players: {playerCount}
       </div>
       <div>
-        <div>
+        <div className="gameID-container">
+          <div></div>
           <p className="game-name-display">{gameName ? `Game ID: ${gameName}` : "No game started"}</p>
-          {gameName && <button onClick={copyToClipboard} className="copy-button"> <img src = "/icon/copy-icon.webp" alt="Copy Icon"/> </button>}
+          {(gameName && !tilesDistributed) &&
+            <button onClick={copyToClipboard} className="copy-button"> <img src = "/icon/copy-icon.webp" alt="Copy Icon"/> </button>
+          }
         </div>
         <GameButton
           name={beastMode ? "Create A Beast Game" : "Create Game"}
