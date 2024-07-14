@@ -78,11 +78,14 @@
     padding: 10px;
     background-color: #000000;
     border: 2px solid #ccc;
+    /* background-color: white;
+    border: 2px solid black; */
     border-radius: 5px;
     display: inline-block;
     margin: 10px;
     font-size: 20px;
     color: #ffffff;
+    /* color: black; */
     font-family: monospace;
     max-width: 300px;
     text-align: right;
@@ -121,11 +124,14 @@
     padding: 8px;
     background-color: #000000;
     border: 2px solid #ccc;
+    /* background-color: white;
+    border: 2px solid black;*/ 
     border-radius: 8px;
     display: inline-block;
     margin: 8px;
     font-size: 18px;
     color: #ffffff;
+    /* color: black; */
     font-family: monospace;
 }
 
@@ -248,6 +254,7 @@
     display: inline-block;
     margin: 10px;
     border: 1px solid rgb(255, 255, 255);
+    /* border: 1px solid black; */
 }
 
 .row {
@@ -259,12 +266,15 @@
     width: 42px; /* Adjusted to fit a larger grid on the screen */
     height: 42px; /* Adjusted to fit a larger grid on the screen */
     border: 1px solid rgb(255, 255, 255);
+    /* border: 1px solid black; */
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     background-color: rgb(0, 0, 0);
+    /* background-color: white; */
     color: rgb(255, 255, 255); /* Ensure letters are black on white background */
+    /* color: black; */
 
     padding-bottom: 3px;
     box-sizing: border-box;
@@ -316,6 +326,8 @@ input, select, button {
     width: 100%;
     background-color: rgb(0, 29, 22);
     border: 3px solid #ccc;
+    /* background-color: white;
+    border: 3px solid black; */
     justify-content: center;
     padding: 15px 0px;
     box-sizing: border-box;
@@ -324,6 +336,7 @@ input, select, button {
 /* CSS for player tile-rack has to change at some point */
 .player-tilerack {
     border: 2px solid rgb(255, 255, 255);
+    /* border: 2px solid black; */
     border-radius: 4px;
     min-height: 42px;
     max-height: fit-content;
@@ -331,11 +344,13 @@ input, select, button {
     margin-left: auto;
     margin-right: auto;
     background-color: rgb(0, 0, 0);
+    /* background-color: white; */
 }
 
 /* Player tiles CSS */
 .player-tilerack .player-letter {
     color: black;
+    /* color: white; */
     font-family: 'Fredoka One', sans-serif;
     font-size: 18px;
 
@@ -381,10 +396,12 @@ input, select, button {
 /* Letters to dump */
 .dump-rack {
     border: 2px solid rgb(255, 255, 255);
+    /* border: 2px solid black; */
     height: 42px;
     min-width: 42px;
     margin-top: 10px;
     background-color: rgb(0, 0, 0);
+/*     background-color: white; */
 }
 
 .dump-rack .dump-letter {
@@ -446,11 +463,14 @@ input[type="text"]:disabled, select:disabled {
     padding: 10px;
     background-color: #000000;
     border: 2px solid #ccc;
+    /* background-color: white;
+    border: 2px solid black; */
     border-radius: 5px;
     display: inline-block;
     margin: 10px;
     font-size: 20px;
     color: #ffffff;
+    /* color: black; */
     font-family: monospace;
     position: fixed;
     top: 15px;
@@ -459,6 +479,7 @@ input[type="text"]:disabled, select:disabled {
 
 .timer-heading {
     color: rgb(209, 209, 209); /* Slightly darker grey text for the heading */
+/*     color: darkblue; */
     margin-bottom: 5px; /* Spacing between heading and timer */
 }
 
@@ -482,11 +503,14 @@ input[type="text"]:disabled, select:disabled {
     padding: 10px;
     background-color: #000000;
     border: 2px solid #ccc;
+    /* background-color: white;
+    border: 2px solid black; */
     border-radius: 5px;
     display: inline-block;
     margin: 10px;
     font-size: 18px;
     color: #ffffff;
+    /* color: black; */
     font-family: monospace;
     position: absolute;
     top: 70px;
