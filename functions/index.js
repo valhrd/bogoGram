@@ -153,7 +153,9 @@ exports.joinGame = functions.https.onCall(async (data, context) => {
   const gameDataRef = firestore.collection("gameData").doc(data.gameID);
   const doc = await gameDataRef.get();
   if (!doc.exists) {
-    throw new Error("Game not found.");
+    return {
+      message: "Game not found",
+    };
   }
   const gameData = doc.data();
   const gameStarted = gameData.tilesDistributed;

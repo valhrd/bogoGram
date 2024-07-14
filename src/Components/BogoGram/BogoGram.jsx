@@ -29,6 +29,9 @@ import useTimer from './useTimer';
 // Instructions
 import InstructionsOverlay from './InstructionsOverlay';
 
+// Modal to replace alerts 
+import Modal from './Modal';
+
 // Grid formation plus tilebag
 const gridSize = 35;
 const initialGrid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(''));
@@ -126,6 +129,10 @@ function BogoGram() {
 
   // instructions
   const [showInstructions, setShowInstructions] = useState(false);
+
+  // showing of modal
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState('');
 
   // Additional booleans and delay time to disable buttons that should not be spammed
   // Buttons to disable: Start Game (may subject to change), Distribute, PEEL, DUMP, BANANAS!
@@ -255,6 +262,17 @@ function BogoGram() {
     });
   }
 
+  // copy game name to clipboard
+  const copyToClipboard = () => {
+    if (gameName) {
+      navigator.clipboard.writeText(gameName).then(() => {
+         setValidationMessage("Succesfully copied to clipboard!");
+      }).catch(err => {
+        console.error('Failed to copy: ', err);
+      });
+    }
+  };
+
   // Join game function for other players
   const handleJoinGame = () => {
     //fun
@@ -273,7 +291,9 @@ function BogoGram() {
       return;
     }
     if (!inputGameId.trim()) {
-      alert("Please enter a valid game ID to join a game.");
+      const content = "Please enter a valid game ID to join a game.";
+      setModalContent(content);
+      setModalOpen(true);
       return;
     }
     const functions = getFunctions(); 
@@ -281,19 +301,30 @@ function BogoGram() {
     joinGame({ gameID: inputGameId.trim() }).then(result => {
       console.log(result.data.message);
       if (result.data.message === "Game has already started") {
-        alert("The game has already started. Please join another one");
+        const content = "The game has already started. Please join another one";
+        setModalContent(content);
+        setModalOpen(true);
+        return;
+      } else if (result.data.message === "Game not found") {
+        const content = "The game could not be found ";
+        setModalContent(content);
+        setModalOpen(true);
         return;
       }
       const res = inputGameId.trim();
       setGameNumber(res); // Set the current game ID to the one joined
       setGameName(result.data.beastMode ? "Beast Mode " + res : res); // Adjust the game name based on the mode
       setBeastMode(result.data.beastMode); // Set beast mode state
-      alert("Successfully joined the game!");
+      const content = "Successfully joined the game!";
+      setModalContent(content);
+      setModalOpen(true);
       setInputGameId(''); // Clear the input field
       setAllValid(false);
     }).catch(error => {
       console.error('Error joining game:', error);
-      alert("Failed to join game: " + error.message);
+      const content = "Failed to join game: " + error.message;
+      setModalContent(content);
+      setModalOpen(true);
     });
   };
 
@@ -326,8 +357,10 @@ function BogoGram() {
       }
       const data = docSnapshot.data();
       // Check if it's a singleplayer game
-      if (data.playerID.length === 1 && data.tilesDistributed) {
-        setSinglePlayer(true);
+      if (data.tilesDistributed) {
+        if (data.playerID.length === 1){
+          setSinglePlayer(true);
+        }
         startTimer();
       }
       const updatesRef = doc(firestore, 'gameData', gameNumber);
@@ -336,6 +369,7 @@ function BogoGram() {
       }  
       if (data.tileDistribution && data.tileDistribution[user.uid]) {
         if (!arraysEqual(data.tileDistribution[user.uid], playerLetters) && !tilesDistributed) {
+          startTimer();
           setPlayerLetters(data.tileDistribution[user.uid]); 
           updateDoc(updatesRef, {['tileDistribution.' + user.uid]: []});
           setTilesDistributed(true);
@@ -350,12 +384,17 @@ function BogoGram() {
         if (data.gameOver && singlePlayer) {
           setGameOver(true);
           setGameWinner(data.gameWinner);
-          alert('You have beat the game!');
+          const content = 'You have beat the game!';
+          setModalContent(content);
+          setModalOpen(true);
         }
         if (data.gameOver && !singlePlayer) {
+          stopTimer();
           setGameOver(true);
           setGameWinner(data.gameWinner);
-          alert(data.gameWinner === user.uid ? "By some lottery, you have won the game!" : "Game over! Boo hoo.");
+          const content = data.gameWinner === user.uid ? "By some lottery, you have won the game!" : "Game over! Boo hoo.";
+          setModalContent(content);
+          setModalOpen(true);
         }
       }
     }, error => {
@@ -380,6 +419,7 @@ function BogoGram() {
   const distributeLetters = () => {
     const functions = getFunctions(app);
     const distributeTiles = httpsCallable(functions, 'distributeTiles');
+    startTimer();
     distributeTiles({ gameID: gameNumber }).catch(error => {
       console.error('Error distributing tiles:', error);
     });
@@ -388,7 +428,9 @@ function BogoGram() {
   // Peel: provides a singular new letter to the player
   const peel = () => {
     if (!tilesInBag) {
-      alert("Not enough tiles in the bag!");
+      const content = "Not enough tiles in the bag!";
+      setModalContent(content);
+      setModalOpen(true);
       return
     }
     const functions = getFunctions(app);
@@ -402,11 +444,15 @@ function BogoGram() {
   // Dump: allows a player to return 1 letter to the bag and get back 3 randomly drawn ones
   const dump = () => {
     if (!tilesInBag) {
-      alert("Not enough tiles in the bag!");
+      const content = "Not enough tiles in the bag!";
+      setModalContent(content);
+      setModalOpen(true);
       return
     }
     if (dumpRack.length !== 1) {
-        alert("Please enter exactly one letter to dump.");
+        const content = "Please enter exactly one letter to dump.";
+        setModalContent(content);
+        setModalOpen(true);
         return;
     }
     const functions = getFunctions(app);
@@ -421,7 +467,9 @@ function BogoGram() {
         });
         } else if (newTiles.includes("*")) {
             setTilesInBag(false);
-            alert("No more tiles in the bag!");
+            const content = "Not enough tiles in the bag!";
+            setModalContent(content);
+            setModalOpen(true);
         } else {
             setDumpRack(prevDumpRack => {
                 return [];
@@ -540,10 +588,14 @@ function BogoGram() {
                 gameWinner: user.uid,
                 finalTime: finalTime 
             });
-            alert(result.data.message);
+            const content = result.data.message;
+            setModalContent(content);
+            setModalOpen(true);
         }).catch((error) => {
             console.error('Error updating leaderboard:', error);
-            alert("Failed to update leaderboard: " + error.message);
+            const content = "Failed to update leaderboard: " + error.message;
+            setModalContent(content);
+            setModalOpen(true);
         });
       } else {
         console.log("Invalid words detected. Please try again.");
@@ -551,6 +603,7 @@ function BogoGram() {
         }
     }
     else {
+      stopTimer();
       if (allValid) {
         // Current player wins
         console.log("You win!")
@@ -825,7 +878,8 @@ function BogoGram() {
       <div>
         <div>
           <p className="game-name-display">{gameName ? `Game ID: ${gameName}` : "No game started"}</p>
-          </div>
+          {gameName && <button onClick={copyToClipboard} className="copy-button"> <img src = "/icon/copy-icon.webp" alt="Copy Icon"/> </button>}
+        </div>
         <GameButton
           name={beastMode ? "Create A Beast Game" : "Create Game"}
           className={`${beastMode ? "beastModeGameButton" : ""}`}
@@ -853,6 +907,9 @@ function BogoGram() {
             onClick={handleDistributeButton}
             disabled={!gameName || distributeButtonDisabled || tilesDistributed}
           />
+          <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
+            <p>{modalContent}</p>
+          </Modal>
         </div>
       </div>
       <div className="tilerack-container">
