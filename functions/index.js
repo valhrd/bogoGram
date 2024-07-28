@@ -286,7 +286,7 @@ exports.peel = functions.https.onCall(async (data, context) => {
       tiles2: tiles2,
       tileUpdates: tileUpdates,
       tilesInBag: tiles0.length > 0 || tiles1.length > 0 ||
-      tiles2.length > playerIDs.length(),
+      tiles2.length > playerIDs.length,
     });
   } else {
     // Handle regular game mode
