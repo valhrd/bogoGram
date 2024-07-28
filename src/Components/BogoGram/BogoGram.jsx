@@ -968,7 +968,7 @@ function BogoGram() {
             </div>
             <GameButton
               name="DUMP"
-              desc={`${beastMode ? "Dump 1 tile for a chance of getting 5 back" : "Dump 1 tile back into the bag and get 3 in return"}`}
+              desc={`${beastMode ? "Dump 1 tile for a chance of getting 5 back or giving it to another player" : "Dump 1 tile back into the bag and get 3 in return"}`}
               onClick={handleDumpButton}
               disabled={dumpButtonDisabled || dumpRack.length !== 1}
             />
