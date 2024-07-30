@@ -1,0 +1,101 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+}
+  
+.modal-content {
+    background: rgb(240, 255, 172);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    height: 100px;
+    width: 80%;
+    max-width: 500px;
+    position: relative;
+    font-size: 16px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+  
+.modal-content .modalCloseButton {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: none;
+    background: none;
+    font-size: 14px;
+    cursor: pointer;
+    width: 40px;
+    height: 30px;
+    background-color: rgb(205, 0, 0);
+}
+
+.modal-content .choiceButtons {
+    position: absolute;
+    bottom: 10px;
+}
+
+.yesButton {
+    background-color: rgb(161, 197, 0);
+    color: rgb(0, 0, 0);
+    font-weight: bold;
+    font-family: 'Fredoka One', sans-serif;
+    font-size: 14px;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 5px rgb(113, 138, 0);
+    cursor: pointer;
+    transition: all 0.1s ease 0s;
+    width: 80px;
+}
+
+.yesButton:hover {
+    background-color: #47ff56; /* A lighter green on hover */
+    box-shadow: 0 5px #22c24a; /* Deeper shadow for 3D effect on hover */
+    transform: translateY(0px); /* Slight raise effect on hover */
+}
+
+.yesButton:active {
+    background-color: #47ff56;
+    box-shadow: 0 0px #22c24a;
+    transform: translateY(5px);
+}
+
+.noButton {
+    background-color: rgb(205, 0, 0);
+    color: rgb(0, 0, 0);
+    font-weight: bold;
+    font-family: 'Fredoka One', sans-serif;
+    font-size: 14px;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 5px rgb(143, 0, 0);
+    cursor: pointer;
+    transition: all 0.1s ease 0s;
+
+    width: 80px;
+}
+
+.noButton:hover {
+    background-color: #47ff56; /* A lighter green on hover */
+    box-shadow: 0 5px #22c24a; /* Deeper shadow for 3D effect on hover */
+    transform: translateY(0px); /* Slight raise effect on hover */
+}
+
+.noButton:active {
+    background-color: #47ff56;
+    box-shadow: 0 0px #22c24a;
+    transform: translateY(5px);
+}

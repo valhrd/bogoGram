@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-function GameButton({ name, desc, className, onClick, disabled }) {
+function GameButton({ name, desc, className, onClick, disabled, additionalStyle }) {
     const [isHovered, setIsHovered] = useState(false);
     return (
         <span>
@@ -10,6 +10,9 @@ function GameButton({ name, desc, className, onClick, disabled }) {
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
                 disabled={disabled}
+
+                // Remove if it breaks too much shit
+                style={additionalStyle}
             >
                 {name}
             </button>

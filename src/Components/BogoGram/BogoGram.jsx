@@ -26,11 +26,10 @@ import GameButton from './GameButton';
 // Timer
 import useTimer from './useTimer';
 
-// Instructions
+// Modal objects
 import InstructionsOverlay from './InstructionsOverlay';
-
-// Modal to replace alerts 
 import Modal from './Modal';
+import OptionsModal from './OptionsModal';
 
 // Grid formation plus tilebag
 const gridSize = 35;
@@ -132,6 +131,7 @@ function BogoGram() {
 
   // showing of modal
   const [isModalOpen, setModalOpen] = useState(false);
+  const [isOptionsModalOpen, setOptionsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState('');
 
   // Additional booleans and delay time to disable buttons that should not be spammed
@@ -688,7 +688,14 @@ function BogoGram() {
       });
   }
 
+  const handleRebuildGrid = () => {
+    const content = "Do you really want to recall all tiles to the rack?";
+    setModalContent(content);
+    setOptionsModalOpen(true);
+  }
+
   const rebuildGrid = () => {
+    setOptionsModalOpen(false);
     grid.map((row, rowIndex) => (
       row.map((cell, colIndex) => {
         if (cell !== "") {
@@ -910,9 +917,17 @@ function BogoGram() {
             onClick={handleDistributeButton}
             disabled={!gameName || distributeButtonDisabled || tilesDistributed}
           />
-          <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
-            <p>{modalContent}</p>
-          </Modal>
+          <Modal
+            isOpen={isModalOpen}
+            onClose={() => setModalOpen(false)}
+            content={modalContent}
+          />
+          <OptionsModal
+            isOpen={isOptionsModalOpen}
+            onYes={rebuildGrid}
+            onNo={() => setOptionsModalOpen(false)}
+            content={<p>{modalContent}</p>}
+          />
         </div>
       </div>
       <div className="tilerack-container">
@@ -989,7 +1004,7 @@ function BogoGram() {
             <GameButton
               name="REBUILD"
               desc="Recalls all your tiles back to the player rack"
-              onClick={rebuildGrid}
+              onClick={handleRebuildGrid}
               disabled={tPlayed.numberOfTilesPlayed === 0}
             />
             <GameButton
