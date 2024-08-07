@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { database } from './firebaseConfig'; // Adjust the path if necessary
-import { getFunctions, httpsCallable} from 'firebase/functions'; //line 3 
+import { database } from './firebaseConfig';
+import { getFunctions, httpsCallable} from 'firebase/functions'; // Line 3
 import { initializeApp } from 'firebase/app'; 
 import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 import { getAuth, signInWithPopup, GoogleAuthProvider, connectAuthEmulator, verifyPasswordResetCode } from 'firebase/auth';
 import { collection, getFirestore, query, orderBy, limit, doc, onSnapshot, updateDoc, getDoc } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
-import Trie from './Trie'; //new 11 Jun
-// import dictionaryData from './dictionary.json';
+import Trie from './Trie';
 
 import TicTacToe from '../TicTacToe/TicTacToe';
 
@@ -34,11 +33,6 @@ import OptionsModal from './OptionsModal';
 // Grid formation plus tilebag
 const gridSize = 35;
 const initialGrid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(''));
-
-
-// const letters = 'HAPPYBOOMVISTA';
-let lettersArray;
-console.log(lettersArray);
 
 // Tiles played changes
 const tPlayed = new TilesPlayed();
@@ -68,15 +62,9 @@ function BogoGram() {
   // For word connectivity
   const [mustConnect, setMustConnect] = useState(false);
 
-  // Meant to keep track of previous values of startRow and startCol for direction toggling
-  // const [startRow, setStartRow] = useState(null);
-  // const [startCol, setStartCol] = useState(null);
-  // For toggling direction of play
-  // const [horizontal, setHorizontal] = useState(1);
-
   // for server side things
   const gameDataRef = collection(firestore, 'gameData'); 
-  const [gameName, setGameName] = useState(null); // this is for debugging
+  const [gameName, setGameName] = useState(null); // This is for debugging
   const [gameNumber, setGameNumber] = useState(null);  // Changed to use useState
   const queryConstraints = query(gameDataRef, orderBy('createdAt'), limit(5)); // is this necessary? 
   const [gameStates] = useCollectionData(queryConstraints, { idField: 'gameID' }); // or this
@@ -89,8 +77,7 @@ function BogoGram() {
   const [tilesDistributed, setTilesDistributed] = useState(false);
   const [tilesInBag, setTilesInBag] = useState(true);
 
-
-  //for dictionary checking (11 Jun)
+  // for dictionary checking (11 Jun)
   const [dictionary, setDictionary] = useState(null);
   const [validationMessage, setValidationMessage] = useState('');  //this is to change a state after checking if all the words are valid
 
@@ -213,7 +200,7 @@ function BogoGram() {
   // state updates for dictionary checking using Trie
   useEffect(() => {
     if (!dictionary) { //new on 11 jun
-      fetch('/dictionary.json')  // Assuming your app is served from the root
+      fetch('/dictionary.json')
         .then(response => response.json())
         .then(data => {
           const loadedDictionary = Trie.deserialize(JSON.stringify(data));
@@ -236,15 +223,7 @@ function BogoGram() {
   }, [dictionary]); //new 11 Jun
 
 
-  // is this still necessary?
-  // const handleCellClick = (row, col) => {
-  //   setStartRow(row);
-  //   setStartCol(col);
-  //   setHorizontal(!horizontal); // Change: keeps track of number of clicks
-  // };
 
-  // start/restart game function // Changed function to taking in isBeastMode variable
-  // to just referencing global beastMode boolean
   const startGame = () => {
     clearBoard();
     setPlayerLetters([]);
@@ -342,7 +321,6 @@ function BogoGram() {
 
     // Tiles played changes
     tPlayed.clear();
-
     setMustConnect(false);
   };
 
@@ -406,10 +384,10 @@ function BogoGram() {
     }
   }, [gameNumber, user, firestore]);
 
-  // helper function for array equality, reduces number of updates
+  // Helper function for array equality, reduces number of updates
   function arraysEqual(a,b) {
     if (a.length !== b.length) return false;
-    for (let i = 0; i< a.length; ++i) {
+    for (let i = 0; i < a.length; ++i) {
       if (a[i] !== b[i]) return false;
     }
     return true;
@@ -489,7 +467,7 @@ function BogoGram() {
   }
 
   
-  // word checker: for end of game, to check if all words are valid (local/react instead of server for latency and operational cost)
+  // Word checker: for end of game, to check if all words are valid (local/react instead of server for latency and operational cost)
   const checkWordsInGrid = (grid, dictionary) => {
     const gridSize = grid.length;
     let wordsToCheck = [];
@@ -523,8 +501,7 @@ function BogoGram() {
     });
   };
   
-  // Helper function to extract words from a line (array of letters)
-  
+  // Helper function to extract words from a line (array of letters) 
   const extractWordsFromLine = (line) => {
     // Function now returns a word array instead of a string
     const words = [];
@@ -871,7 +848,6 @@ function BogoGram() {
           </span>
         ))}
       </h1>
-      {/* Conditional rendering to show the sign-out button only when the user is signed in */}
       <div>
         <GameButton
           name="Sign Out"
@@ -934,12 +910,9 @@ function BogoGram() {
         <h2 className="tilerack-title">Tile Rack</h2>
         <div
           className="player-tilerack"
-
-          // Drag and drop from board to player rack
           onDrop={handleDrop('rack')}
           onDragOver={handleDragOver}
         >
-          {/* Testing drag and drop feature */}
           <div>
             {playerLetters.map((letter, index) => (
               <Tile
@@ -947,8 +920,6 @@ function BogoGram() {
                 key={index}
                 className="player-letter"
                 draggable={true}
-                
-                // Additional code for drag and drop feature
                 onDragStart={(event) => handleRackDragStart(event, letter, index)}
               />
             ))}
@@ -961,12 +932,9 @@ function BogoGram() {
             </h2>
             <div
               className="dump-rack"
-
-              // Drag and drop from board to player rack
               onDrop={handleDrop('dump')}
               onDragOver={handleDragOver}
             >
-              {/* Testing drag and drop feature */}
               <div>
                 {dumpRack.map((letter, index) => (
                   <Tile
@@ -974,8 +942,6 @@ function BogoGram() {
                     key={index}
                     className={`${dumpButtonDisabled ? "dump-cooldown" : ""} dump-letter`}
                     draggable={!dumpButtonDisabled}
-                    
-                    // Additional code for drag and drop feature
                     onDragStart={(event) => handleDumpDragStart(event, letter, 0)}
                   />
                 ))}
@@ -1045,8 +1011,6 @@ function BogoGram() {
             {row.map((cell, colIndex) => (
               <div
                 className="cell"
-
-                // Shifted drag and drop from Tile to div
                 onDragOver={handleDragOver}
                 onDrop={handleDrop('board', rowIndex, colIndex)}
               >
@@ -1054,11 +1018,7 @@ function BogoGram() {
                   letter={cell}
                   key={colIndex}
                   className={`${cell ? 'board-tile' : ''}`}
-                  // Probably unneeded
-                  // onClick={() => handleCellClick(rowIndex, colIndex)}
                   draggable={true}
-
-                  // Testing drag and drop functionality
                   onDragStart={(event) => handleCellDragStart(event, cell, rowIndex, colIndex)}
                 />
               </div>

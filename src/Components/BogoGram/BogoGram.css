@@ -61,9 +61,9 @@
 }
 
 .gameButton:hover {
-    background-color: #47ff56; /* A lighter green on hover */
-    box-shadow: 0 5px #22c24a; /* Deeper shadow for 3D effect on hover */
-    transform: translateY(0px); /* Slight raise effect on hover */
+    background-color: #47ff56;
+    box-shadow: 0 5px #22c24a;
+    transform: translateY(0px);
 }
 
 .signOutButton {
@@ -78,14 +78,11 @@
     padding: 10px;
     background-color: #000000;
     border: 2px solid #ccc;
-    /* background-color: white;
-    border: 2px solid black; */
     border-radius: 5px;
     display: inline-block;
     margin: 10px;
     font-size: 20px;
     color: #ffffff;
-    /* color: black; */
     font-family: monospace;
     max-width: 300px;
     text-align: right;
@@ -124,14 +121,11 @@
     padding: 8px;
     background-color: #000000;
     border: 2px solid #ccc;
-    /* background-color: white;
-    border: 2px solid black;*/ 
     border-radius: 8px;
     display: inline-block;
     margin: 8px;
     font-size: 18px;
     color: #ffffff;
-    /* color: black; */
     font-family: monospace;
 }
 
@@ -153,7 +147,7 @@
     width: 24px;
 }
 
-/* CSS ror the Beast Mode button */
+/* CSS for the Beast Mode button */
 .beastModeToggle {
     background: linear-gradient(to bottom, rgb(240, 255, 172) 50%, rgb(80, 250, 95) 120px);
     color: rgb(0, 0, 0);
@@ -181,9 +175,9 @@
 }
 
 .beastModeToggle:active {
-    box-shadow: 0 0px #22c24a; /* Deeper shadow for 3D effect on hover */
+    box-shadow: 0 0px #22c24a;
     transition: all 0.3s ease 0s;
-    transform: translateY(5px); /* Pushed effect when clicked */
+    transform: translateY(5px);
 }
 
 .beastModeToggle:focus {
@@ -254,7 +248,6 @@
     display: inline-block;
     margin: 10px;
     border: 1px solid rgb(255, 255, 255);
-    /* border: 1px solid black; */
 }
 
 .row {
@@ -263,18 +256,15 @@
 
 /* Board tiles CSS */
 .cell {
-    width: 42px; /* Adjusted to fit a larger grid on the screen */
-    height: 42px; /* Adjusted to fit a larger grid on the screen */
+    width: 42px;
+    height: 42px;
     border: 1px solid rgb(255, 255, 255);
-    /* border: 1px solid black; */
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     background-color: rgb(0, 0, 0);
-    /* background-color: white; */
-    color: rgb(255, 255, 255); /* Ensure letters are black on white background */
-    /* color: black; */
+    color: rgb(255, 255, 255);
 
     padding-bottom: 3px;
     box-sizing: border-box;
@@ -326,8 +316,6 @@ input, select, button {
     width: 100%;
     background-color: rgb(0, 29, 22);
     border: 3px solid #ccc;
-    /* background-color: white;
-    border: 3px solid black; */
     justify-content: center;
     padding: 15px 0px;
     box-sizing: border-box;
@@ -336,7 +324,6 @@ input, select, button {
 /* CSS for player tile-rack has to change at some point */
 .player-tilerack {
     border: 2px solid rgb(255, 255, 255);
-    /* border: 2px solid black; */
     border-radius: 4px;
     min-height: 42px;
     max-height: fit-content;
@@ -344,13 +331,11 @@ input, select, button {
     margin-left: auto;
     margin-right: auto;
     background-color: rgb(0, 0, 0);
-    /* background-color: white; */
 }
 
 /* Player tiles CSS */
 .player-tilerack .player-letter {
     color: black;
-    /* color: white; */
     font-family: 'Fredoka One', sans-serif;
     font-size: 18px;
 
@@ -396,12 +381,10 @@ input, select, button {
 /* Letters to dump */
 .dump-rack {
     border: 2px solid rgb(255, 255, 255);
-    /* border: 2px solid black; */
     height: 42px;
     min-width: 42px;
     margin-top: 10px;
     background-color: rgb(0, 0, 0);
-/*     background-color: white; */
 }
 
 .dump-rack .dump-letter {
@@ -431,25 +414,25 @@ input, select, button {
 }
 
 input[type="text"], select {
-    width: calc(13%); /* Slightly less than full width to accommodate padding */
-    padding: 12px 20px; /* Good padding for ease of interaction */
-    margin: 20px 10px; /* Margin for spacing between elements */
-    display: inline-block; /* Ensures proper alignment */
-    border: 2px solid #ccc; /* Subtle border for aesthetics */
-    border-radius: 5px; /* Rounded corners for a modern look */
-    box-sizing: border-box; /* Adjusts box sizing to include padding and border */
-    background-color: #f8f8f8; /* Light background for visibility */
-    color: #333; /* Dark text for readability */
+    width: calc(13%);
+    padding: 12px 20px;
+    margin: 20px 10px;
+    display: inline-block;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    background-color: #f8f8f8;
+    color: #333;
 }
 
 input[type="text"]:focus, select:focus {
-    border-color: #0056b3; /* Blue border on focus to match the theme */
-    background-color: #e8f0fe; /* Very light blue background on focus for visual feedback */
+    border-color: #0056b3;
+    background-color: #e8f0fe;
 }
 
 input[type="text"]:disabled, select:disabled {
-    background-color: #e7e7e7; /* Grey background for disabled input to indicate non-interactivity */
-    color: #d4d4d4; /* Grey text for disabled input to maintain clarity */
+    background-color: #e7e7e7;
+    color: #d4d4d4;
 }
 
 .check-words-display {
@@ -463,14 +446,11 @@ input[type="text"]:disabled, select:disabled {
     padding: 10px;
     background-color: #000000;
     border: 2px solid #ccc;
-    /* background-color: white;
-    border: 2px solid black; */
     border-radius: 5px;
     display: inline-block;
     margin: 10px;
     font-size: 20px;
     color: #ffffff;
-    /* color: black; */
     font-family: monospace;
     position: fixed;
     top: 15px;
@@ -478,13 +458,12 @@ input[type="text"]:disabled, select:disabled {
 }
 
 .timer-heading {
-    color: rgb(209, 209, 209); /* Slightly darker grey text for the heading */
-/*     color: darkblue; */
-    margin-bottom: 5px; /* Spacing between heading and timer */
+    color: rgb(209, 209, 209);
+    margin-bottom: 5px;
 }
 
 .timer-value {
-    font-weight: bold; /* Makes the timer's number bold */
+    font-weight: bold;
     color: rgb(61, 63, 49);
 }
 
@@ -503,14 +482,11 @@ input[type="text"]:disabled, select:disabled {
     padding: 10px;
     background-color: #000000;
     border: 2px solid #ccc;
-    /* background-color: white;
-    border: 2px solid black; */
     border-radius: 5px;
     display: inline-block;
     margin: 10px;
     font-size: 18px;
     color: #ffffff;
-    /* color: black; */
     font-family: monospace;
     position: absolute;
     top: 70px;

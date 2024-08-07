@@ -5,7 +5,6 @@ const InstructionsOverlay = ({ onClose }) => {
   return (
     <div className="overlay">
       <div className="overlay-content">
-        {/* <button className="close-btn" onClick={onClose}>&times;</button> */}
         <h2>How To Play</h2>
         <ul>
           <li>First <span className="button-name">Sign In</span></li>
