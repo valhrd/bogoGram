@@ -12,8 +12,10 @@ Then run this command to start the web application
 - Hence, we instead recommend going to https://bogogram-64426.web.app/ and playing the game there. Enjoy!
 
 ## WARNING
-We do not recommend opening the following files in case it potentially crashes our IDE:
+We do not recommend opening the following files in case it potentially crashes your IDE:
 * populateTrie.js
 * serializaTrie.js
 * words.csv
 * wordsArray.csv
+
+These files contain around 178k words used to fill the dictionary and we do not recommend opening any file that references them.
